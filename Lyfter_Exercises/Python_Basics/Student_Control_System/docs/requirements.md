@@ -16,8 +16,8 @@ You must create a program with a command-line interface (that is, based on `inpu
 4. View the information of all entered students. ✅
 5. View the top 3 students with the highest grade average (that is, the average of `Spanish grade` + `English grade` + `Social Studies grade` + `Science grade`). ✅
 6. View the overall average across all students' grades (that is, the average of each student's `grade average`). ✅
-7. Export all current data to a `CSV` file.
-8. Import data from a previously exported `CSV` file. If there is no previously exported file, it must inform the user.
+7. Export all current data to a `CSV` file. ✅
+8. Import data from a previously exported `CSV` file. If there is no previously exported file, it must inform the user. ✅
 
 ## Project Structure 
 
