@@ -8,9 +8,9 @@ class User(ABC):
     @abstractmethod
     def get_role(self):
         pass
-
+    @abstractmethod
     def has_permission(self, permission):
-        return permission in self.permissions
+        pass
 
 
 class AdminUser(User):
@@ -29,6 +29,9 @@ class RegularUser(User):
 
     def get_role(self):
         return "Regular"
+
+    def has_permission(self, permission):
+            return permission in self.permissions
 
 
 user_admin = AdminUser("Oscar")

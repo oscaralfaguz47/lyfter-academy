@@ -14,7 +14,7 @@ class Car(Vehicle):
         self.num_of_doors = num_of_doors
 
     def get_info(self):
-        return f"{super().get_info()}, num of doors {self.num_of_doors}"
+        return f"{super().get_info()} - {self.num_of_doors} puertas"
 
 class Motorcycle(Vehicle):
     def __init__(self, brand, year, motorcycle_type):
@@ -22,7 +22,7 @@ class Motorcycle(Vehicle):
         self.motorcycle_type = motorcycle_type
 
     def get_info(self):
-        return f"{super().get_info()}, motorcycle type: {self.motorcycle_type}"
+        return f"{super().get_info()} - Tipo: {self.motorcycle_type}"
 
 
 vehicle1 = Car("Toyota", 2024, 4)
