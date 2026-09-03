@@ -49,6 +49,7 @@ class Stack:
         num_iterations = 0
         while changes_made:
             changes_made = False
+            num_iterations += 1
             current_node = self.top
             while current_node.next is not None:
                 next_node = current_node.next
@@ -60,7 +61,6 @@ class Stack:
                     changes_made = True
                     num_changes_made += 1
                 current_node = current_node.next
-                num_iterations += 1
         return num_iterations, num_changes_made
 
 stack = Stack()
