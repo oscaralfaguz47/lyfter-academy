@@ -25,16 +25,17 @@
                     - Validation "Avoid creating incomes without category" 
 
 ## Data
-    - categories_data.CSV -> columns: id_category, category_name and creation_date"
-    - incomes_data.CSV -> columns: id_income, income_title, amount, id_category, creation_date"
-    - expenses_data.CSV -> columns: id_expense, expense_title, amount, id_category, creation_date"
+    - data_context.py -> methods: save_data_to_csv(), get_data_from_csv()
+    - categories_data.csv -> columns: id_category, category_name and creation_date"
+    - incomes_data.csv -> columns: id_income, income_title, amount, id_category, creation_date"
+    - expenses_data.csv -> columns: id_expense, expense_title, amount, id_category, creation_date"
 
 ## Models
     # Classes
-        - Category: variables -> id_category, category_name. methods -> display_categories(), create_category() 
-        - Transaction: variables -> id, transaction_title, amount, creation_date. methods -> get_records(), create_record()
-        - Expense: variables -> id_expense, expense_title, expense_amount, id_category
-        - Income: variables -> id_income, income_title, income_amount, id_category
+        - category.py: variables -> id_category, category_name, creation_date. methods -> display_categories(), create_category() 
+        - transaction.py: variables -> id, transaction_title, amount, creation_date. methods -> get_records(), create_record()
+        - expense.py: variables -> id_expense, expense_title, expense_amount, id_category
+        - income.py: variables -> id_income, income_title, income_amount, id_category
 ## Services
     - expense_service.py
     - income_service.py

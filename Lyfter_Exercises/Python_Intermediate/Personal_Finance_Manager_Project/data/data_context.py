@@ -1,0 +1,25 @@
+import csv
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
+
+def save_data_to_csv(record, file_name, field_names):
+    file_path = BASE_DIR / file_name
+    file_exists = file_path.exists() and file_path.stat().st_size > 0
+
+    with open(file_path, "a", newline="", encoding="utf-8") as file:
+        writer = csv.DictWriter(file, fieldnames=field_names)
+        if not file_exists:
+            writer.writeheader()
+        writer.writerow(record.to_dict())
+
+
+def get_data_from_csv(file_name, model_class):
+    file_path = BASE_DIR / file_name
+
+    if not file_path.exists():
+        return []
+    
+    with open(file_path, "r", newline="", encoding="utf-8") as file:
+        reader = csv.DictReader(file)
+        return [model_class.from_dict(row) for row in reader]
