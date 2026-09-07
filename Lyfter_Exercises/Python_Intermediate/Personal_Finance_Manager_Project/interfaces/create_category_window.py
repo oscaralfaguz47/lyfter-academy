@@ -1,34 +1,34 @@
 import FreeSimpleGUI as sg
 from services.category_service import create_category
+from interfaces.gui_components import create_window, window_title, primary_button, cancel_button, element_label, error_label, input_text
 
 def show_create_category_window():
     # Declare the elements
     layout = [
-        [sg.Text("Create New Category", font=("Helvetica", 14, "bold"))],
+        [window_title("Create New Category", "Add a category to organize your transactions (expense/income)")],
         [sg.Text("")],
-        [sg.Text("Category Name", size=(15, 1), font=("bold")), sg.Input(key="-CATEGORY_NAME-")],
-        [sg.Text("", key="-ERROR-", text_color="red")],
-        [sg.Button("Create Category")]
+        [element_label("Category Name"), input_text(key="-CATEGORY_NAME-")],
+        [error_label()],
+        [primary_button("Create Category", key="-CREATE-"), cancel_button("Cancel")],
     ]
 
     # Create Window
-    window = sg.Window("Create Category", layout, location=(400, 200))
+    window = create_window("Create Category", layout)
 
     # Event loop to process "events" and get the inputs "values"
     while True:
         event, values = window.read()
 
-        if event == "Create Category":
+        if event == "-CREATE-":
             try:
                 create_category(values["-CATEGORY_NAME-"])
                 window.close()
-                sg.popup("Changes saved", location=(400, 200))
             except TypeError as e:
                 window["-ERROR-"].update(e)
             except ValueError as e:
                 window["-ERROR-"].update(e)
 
         # Close window event
-        if event == sg.WIN_CLOSED:
+        if event == sg.WIN_CLOSED or event == "Cancel":
             break
     window.close() 

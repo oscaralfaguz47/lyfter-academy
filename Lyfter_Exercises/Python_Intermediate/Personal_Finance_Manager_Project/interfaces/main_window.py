@@ -1,16 +1,17 @@
 import FreeSimpleGUI as sg
 from interfaces.create_category_window import show_create_category_window
+from interfaces.gui_components import create_window, window_title, primary_button
 
 def show_main_window():
     # Declare the elements
     layout = [
-        [sg.Text(" WELCOME TO THE PERSONAL FINANCE APP", font=("Helvetica", 14, "bold"))],
+        [window_title(" WELCOME TO THE PERSONAL FINANCE APP", "✓ Monitor your cash flow with our app")],
         [sg.Text("")],
-        [sg.Button("Add New Category")]
+        [primary_button("Add New Category")]
     ]
 
     # Create Window
-    window = sg.Window("HOME", layout, location=(400, 200))
+    window = create_window("HOME", layout)
 
 
     # Event loop to process "events" and get the inputs "values"

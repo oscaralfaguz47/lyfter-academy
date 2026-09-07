@@ -24,6 +24,7 @@
                     - Input "Income Amount"
                     - Select "Category"
                     - Validation "Avoid creating incomes without category" 
+    # gui_components.py
 
 ## Data
     - categories_data.csv -> columns: id_category, category_name and creation_date" ✅
