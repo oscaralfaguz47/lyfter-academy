@@ -1,13 +1,14 @@
 ### PERSONAL FINANCES PROJECT
 
 ## Interfaces
-    # main_window.py
-        - Button "Add New Category"
-            # create_category_window.py
-                - Input "Category Name"
-                - Button "Create Category"
-                - Validation "Avoid creating multiple categories with the same name"
-        - "expense_partial.py"
+    # main_window.py ✅
+        - Button "Add New Category" ✅
+            # create_category_window.py ✅
+                - Input "Category Name" ✅
+                - Button "Create Category" ✅
+                - Validation "Avoid creating multiple categories with the same name" ✅
+                - Validation "Avoid creating categories with empty names" ✅
+        - "expense_partial.py" 
             - Table "Expenses"
             - Button "Add New Expense"
                 # create_expense_window.py
@@ -25,27 +26,26 @@
                     - Validation "Avoid creating incomes without category" 
 
 ## Data
-    - data_context.py -> methods: save_data_to_csv(), get_data_from_csv()
-    - categories_data.csv -> columns: id_category, category_name and creation_date"
+    - categories_data.csv -> columns: id_category, category_name and creation_date" ✅
     - incomes_data.csv -> columns: id_income, income_title, amount, id_category, creation_date"
     - expenses_data.csv -> columns: id_expense, expense_title, amount, id_category, creation_date"
 
 ## Models
     # Classes
-        - category.py: variables -> id_category, category_name, creation_date. methods -> display_categories(), create_category() 
-        - transaction.py: variables -> id, transaction_title, amount, creation_date. methods -> get_records(), create_record()
+        - category.py: variables -> id_category, category_name, creation_date. methods -> to_dict(), from_dict() ✅
+        - transaction.py: variables -> id, transaction_title, amount, creation_date. abstract methods -> to_dict(), from_dict()
         - expense.py: variables -> id_expense, expense_title, expense_amount, id_category
         - income.py: variables -> id_income, income_title, income_amount, id_category
 ## Services
-    - expense_service.py
-    - income_service.py
-    - category_service.py
-    - file_storage.py
+    - category_service.py -> methods: create_category(), get_all_categories() ✅
+    - file_storage_service.py -> methods: save_data_to_csv(), get_data_from_csv() ✅
+    - expense_service.py -> methods: create_expense(), get_all_expenses()
+    - income_service.py -> create_income(), get_all_incomes()
 ## Utils
-    - validations.py
+    - validations.py ✅
 
 ## Tests
+    - test_category_services.py ✅
     - test_expense_service.py
     - test_income_services.py
-    - test_category_services.py
     - test_file_storage.py

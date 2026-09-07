@@ -1,5 +1,5 @@
 import FreeSimpleGUI as sg
-from services.category_services import create_category
+from services.category_service import create_category
 
 def show_create_category_window():
     # Declare the elements

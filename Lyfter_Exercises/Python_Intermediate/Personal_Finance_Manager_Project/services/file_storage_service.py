@@ -1,10 +1,12 @@
 import csv
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parent.parent
+DATA_DIR = BASE_DIR / "data"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 def save_data_to_csv(record, file_name, field_names):
-    file_path = BASE_DIR / file_name
+    file_path = DATA_DIR / file_name
     file_exists = file_path.exists() and file_path.stat().st_size > 0
 
     with open(file_path, "a", newline="", encoding="utf-8") as file:
@@ -15,7 +17,7 @@ def save_data_to_csv(record, file_name, field_names):
 
 
 def get_data_from_csv(file_name, model_class):
-    file_path = BASE_DIR / file_name
+    file_path = DATA_DIR / file_name
 
     if not file_path.exists():
         return []

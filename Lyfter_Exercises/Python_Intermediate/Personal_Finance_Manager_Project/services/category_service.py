@@ -1,5 +1,5 @@
 from models.category import Category
-from data.data_context import get_data_from_csv
+from services.file_storage_service import get_data_from_csv, save_data_to_csv
 
 
 def create_category(category_name):
@@ -10,7 +10,8 @@ def create_category(category_name):
             raise ValueError(f"The category '{category_name}' already exists")
         
     new_category = Category(category_name)
-    new_category.create_category()
+    save_data_to_csv(new_category, Category.FILE_NAME, Category.FIELD_NAMES)
+    return new_category
 
 def get_all_categories():
     categories = get_data_from_csv(Category.FILE_NAME, Category)
