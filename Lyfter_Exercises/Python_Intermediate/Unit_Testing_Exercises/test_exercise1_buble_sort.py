@@ -34,18 +34,15 @@ def test_bubble_sort_Verify_bubble_sort_function_works_with_empty_list():
     # Assert
     assert ordered_list == []
 
-def test_bubble_sort_Verify_bubble_sort_function_works_with_no_list_type_as_parameter():
-    # Arrange
-    my_parameters = {
-        "int_parameter" : 100,
-        "str_parameter" : "Hello Lyfter team",
-        "float_parameter" : 100.80,
-        "dictionary_parameter" : {"user_id": 1, "username": "Oscar", "last_name": "Alfaro"},
-        "boolean_parameter" : True,
-        "none_parameter" : None
-    }
-
+@pytest.mark.parametrize("invalid_parameter", [
+    100,
+    "Hello Lyfter team",
+    100.80,
+    {"user_id":1, "username": "Oscar", "last_name": "Alfaro"},
+    True,
+    None
+])
+def test_bubble_sort_raises_type_error_with_non_list_parameter(invalid_parameter):
     # Act & Assert
-    for dic_parameter in my_parameters:
-        with pytest.raises(TypeError):
-            bubble_sort(dic_parameter)
+    with pytest.raises(TypeError, match="Expected a list"):
+        bubble_sort(invalid_parameter)
