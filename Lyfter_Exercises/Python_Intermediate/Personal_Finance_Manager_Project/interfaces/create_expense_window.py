@@ -20,7 +20,7 @@ def show_create_expense_window():
     ]
 
     # Create Window
-    window = create_window("Create Category", layout)
+    window = create_window("Create Expense", layout)
 
     # Event loop to process "events" and get the inputs "values"
     while True:
