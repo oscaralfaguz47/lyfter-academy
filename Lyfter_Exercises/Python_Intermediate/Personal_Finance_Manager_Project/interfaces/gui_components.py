@@ -101,8 +101,24 @@ def input_text(key):
         background_color=INPUT_BG,
         text_color=TEXT_LIGHT,
         border_width=0,
-        pad=((0, 0), (8, 8))
+        pad=((0, 0), (8, 8)),
+        size=(30, 1)
         )
+
+def input_dropdown(key, values, default_value=None):
+    return sg.Combo(
+        values,
+        default_value=default_value,
+        key=key,
+        font=(FONT_FAMILY, 11),
+        background_color=INPUT_BG,
+        text_color=TEXT_LIGHT,
+        button_background_color=PRIMARY,
+        button_arrow_color=TEXT_LIGHT,
+        readonly=True,
+        pad=((0, 0), (8, 8)),
+        size=(28, 1)
+    )
 
 def table(values, headings, table_key, num_rows):
     return sg.Table( 

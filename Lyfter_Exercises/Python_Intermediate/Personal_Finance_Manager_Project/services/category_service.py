@@ -14,6 +14,4 @@ def create_category(category_name):
     return new_category
 
 def get_all_categories():
-    categories = get_data_from_csv(Category.FILE_NAME, Category)
-    rows = [[c.id_category, c.category_name] for c in categories] 
-    return rows
+    return get_data_from_csv(Category.FILE_NAME, Category)
