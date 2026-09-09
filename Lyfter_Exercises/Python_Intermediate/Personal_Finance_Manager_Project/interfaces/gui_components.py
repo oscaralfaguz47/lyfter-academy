@@ -32,7 +32,7 @@ def apply_theme():
         element_padding=(5, 5)
     )
 
-def create_window(title, layout, resizable=False):
+def create_window(title, layout, resizable=False, location=(600, 100)):
     window = sg.Window(
         title,
         layout,
@@ -43,13 +43,15 @@ def create_window(title, layout, resizable=False):
         finalize=True,
         no_titlebar=False,
         grab_anywhere=False,
-        location=(400, 200)
+        location=location
     )
+
 
     for element in window.element_list():
         if isinstance(element, sg.Button):
             element.set_cursor("hand2")
     return window
+
 
 def window_title(text, subtitle=None):
     rows = [
@@ -120,12 +122,14 @@ def input_dropdown(key, values, default_value=None):
         size=(28, 1)
     )
 
-def table(values, headings, table_key, num_rows):
+def table(values, headings, table_key, num_rows=5, col_widths=None):
     return sg.Table( 
         values=values, 
         headings=headings, 
         key=table_key, 
         num_rows=num_rows, 
+        col_widths=col_widths,
+        auto_size_columns=col_widths is None,
         justification="left", 
         font=(FONT_FAMILY, 10), 
         header_font=(FONT_FAMILY, 10, "bold"), 
@@ -136,6 +140,9 @@ def table(values, headings, table_key, num_rows):
         alternating_row_color=BACKGROUND, 
         selected_row_colors=(TEXT_LIGHT, PRIMARY), 
         expand_x=True, 
+        expand_y=True,
         hide_vertical_scroll=False, 
-        border_width=0, 
+        border_width=0,
+        row_height=28,
+        pad=((0, 0), (10, 10)) 
         )

@@ -13,7 +13,7 @@ def show_create_category_window():
     ]
 
     # Create Window
-    window = create_window("Create Category", layout)
+    window = create_window("Create Category", layout, resizable=True)
 
     # Event loop to process "events" and get the inputs "values"
     while True:

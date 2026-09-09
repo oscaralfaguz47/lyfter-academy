@@ -17,13 +17,14 @@ def get_expense_rows():
 def build_expense_section():
     rows = get_expense_rows()
     return sg.Column( 
-        [ [element_label("Expenses"), 
+        [ [element_label("EXPENSES"), 
            sg.Push(), 
            primary_button("+ Add Expense", key=ADD_BUTTON_KEY)], 
-           [table(rows, HEADINGS, TABLE_KEY, len(rows))],
+           [table(rows, HEADINGS, TABLE_KEY, 5, col_widths=[25, 12, 18])],
            ], 
         background_color=BACKGROUND,
-        expand_x=True
+        expand_x=True,
+        expand_y=True
         )
 
 def refresh_expenses_table(window):
