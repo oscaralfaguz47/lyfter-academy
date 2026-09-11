@@ -24,11 +24,21 @@
 
 ## 3. REST vs SOAP vs GraphQL
 
-| API Type | Data format | Nivel de flexibilidad | Dificultad de implementación | Uso actual (Alta / Media / Baja) |
-|-------------|------------------------|------------------------|-------------------------------|-----------------------------------|
-| REST        |                        |                        |                                |                                    |
-| SOAP        |                        |                        |                                |                                    |
-| GraphQL     |                        |                        |                                |                                    |
+| API type | Data format | Flexibility level                       | Implementation difficulty | Current use (High / Medium / Slow) |
+|----------|-------------|-----------------------------------------|---------------------------|------------------------------------|
+| REST     | JSON/XML    | Medium, the server defines the response | Low                       | Hig                                |
+| SOAP     | XML only    | Low, the contract (WSDL) defines it     | High                      | Low                                |
+| GraphQL  | JSON        | High, the client defines the response   | Medium                    | Medium                             |
+
+For a modern startup building an online booking app, REST is the better choice.
+Why?, here my explanation:
+A booking system is transactional CRUD over a fer resources such as: users, providers, slots, and reservations. REST fits that model directly, and the hard parts are already solved at the protocol level. Availability queries are the most frequent operation and are cacheable by by URL, sometimes GraphQL gives up by posting everything to a single endpoint. Concurrent bookings for the same slot are handled with 409 conflict, and retried payments with an idempotency key header. The services of a booking startup depends on Stripe, Twilio, calendar providers, all of them speak REST, and a small team ships faster with it. GraphQL wins once the product runs several clients (web, iOS, Android, an admin dashboard), that is a scaling decision, not a staring one.  
+
+Summary:
+REST scales better in traffic of data because it can use HTTP caching, but it serves the same data in one fixed shape.
+GraphQL scales better in variety of clients, if the app needs to serve different shapes of the same data (When Android, iOS and web clients need different shapes of he same data, and you find yourself creating a separate endpoint for each one, GraphQL is a good fit, the client declares which fields it wants, so onw schema serves all three)
+SOAP is better when a formally enforced contract is required between organizations that do not trust each other.
+
 
 **¿Cuál es más apropiada para una startup moderna? ¿Por qué?**
 
