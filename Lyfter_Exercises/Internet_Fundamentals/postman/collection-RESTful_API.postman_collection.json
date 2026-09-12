@@ -1,0 +1,671 @@
+{
+  "info": {
+    "_postman_id": "cd4b6756-7f30-4e37-8db5-e7048d4ecd9d",
+    "name": "RESTful API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "20004255"
+  },
+  "item": [
+    {
+      "name": "Get all objects",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": [
+        {
+          "name": "Get all objects Response",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/objects",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "objects"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": null,
+          "header": [
+            {
+              "key": "Date",
+              "value": "Sat, 12 Sep 2026 00:54:37 GMT"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json;charset=UTF-8"
+            },
+            {
+              "key": "Transfer-Encoding",
+              "value": "chunked"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Server",
+              "value": "cloudflare"
+            },
+            {
+              "key": "Nel",
+              "value": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}"
+            },
+            {
+              "key": "Vary",
+              "value": "Origin"
+            },
+            {
+              "key": "Vary",
+              "value": "Access-Control-Request-Method"
+            },
+            {
+              "key": "Vary",
+              "value": "Access-Control-Request-Headers"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-XSS-Protection",
+              "value": "1; mode=block"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, max-age=0, must-revalidate"
+            },
+            {
+              "key": "Pragma",
+              "value": "no-cache"
+            },
+            {
+              "key": "Expires",
+              "value": "0"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "DENY"
+            },
+            {
+              "key": "cf-cache-status",
+              "value": "DYNAMIC"
+            },
+            {
+              "key": "Report-To",
+              "value": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=keWw7tpzb1Ddwdd3%2FfDvJaPJNxufSCaPPy8GdUw3fWsjYDdi1d759ka48Zb8aGtHTrRpbaIX9SSGYgYRGmlST86n78LqDauta24f%2FfhJsE%2FcS7hT%2FTo6oF7qKnzG2bZB2fTLKAPP\"}]}"
+            },
+            {
+              "key": "Content-Encoding",
+              "value": "br"
+            },
+            {
+              "key": "CF-RAY",
+              "value": "a39af1242937ddaa-SJO"
+            },
+            {
+              "key": "alt-svc",
+              "value": "h3=\":443\"; ma=86400"
+            }
+          ],
+          "cookie": [],
+          "body": "[\n    {\n        \"id\": \"1\",\n        \"name\": \"Google Pixel 6 Pro\",\n        \"data\": {\n            \"color\": \"Cloudy White\",\n            \"capacity\": \"128 GB\"\n        }\n    },\n    {\n        \"id\": \"2\",\n        \"name\": \"Apple iPhone 12 Mini, 256GB, Blue\",\n        \"data\": null\n    },\n    {\n        \"id\": \"3\",\n        \"name\": \"Apple iPhone 12 Pro Max\",\n        \"data\": {\n            \"color\": \"Cloudy White\",\n            \"capacity GB\": 512\n        }\n    },\n    {\n        \"id\": \"4\",\n        \"name\": \"Apple iPhone 11, 64GB\",\n        \"data\": {\n            \"price\": 389.99,\n            \"color\": \"Purple\"\n        }\n    },\n    {\n        \"id\": \"5\",\n        \"name\": \"Samsung Galaxy Z Fold2\",\n        \"data\": {\n            \"price\": 689.99,\n            \"color\": \"Brown\"\n        }\n    },\n    {\n        \"id\": \"6\",\n        \"name\": \"Apple AirPods\",\n        \"data\": {\n            \"generation\": \"3rd\",\n            \"price\": 120\n        }\n    },\n    {\n        \"id\": \"7\",\n        \"name\": \"Apple MacBook Pro 16\",\n        \"data\": {\n            \"year\": 2019,\n            \"price\": 1849.99,\n            \"CPU model\": \"Intel Core i9\",\n            \"Hard disk size\": \"1 TB\"\n        }\n    },\n    {\n        \"id\": \"8\",\n        \"name\": \"Apple Watch Series 8\",\n        \"data\": {\n            \"Strap Colour\": \"Elderberry\",\n            \"Case Size\": \"41mm\"\n        }\n    },\n    {\n        \"id\": \"9\",\n        \"name\": \"Beats Studio3 Wireless\",\n        \"data\": {\n            \"Color\": \"Red\",\n            \"Description\": \"High-performance wireless noise cancelling headphones\"\n        }\n    },\n    {\n        \"id\": \"10\",\n        \"name\": \"Apple iPad Mini 5th Gen\",\n        \"data\": {\n            \"Capacity\": \"64 GB\",\n            \"Screen size\": 7.9\n        }\n    },\n    {\n        \"id\": \"11\",\n        \"name\": \"Apple iPad Mini 5th Gen\",\n        \"data\": {\n            \"Capacity\": \"254 GB\",\n            \"Screen size\": 7.9\n        }\n    },\n    {\n        \"id\": \"12\",\n        \"name\": \"Apple iPad Air\",\n        \"data\": {\n            \"Generation\": \"4th\",\n            \"Price\": \"419.99\",\n            \"Capacity\": \"64 GB\"\n        }\n    },\n    {\n        \"id\": \"13\",\n        \"name\": \"Apple iPad Air\",\n        \"data\": {\n            \"Generation\": \"4th\",\n            \"Price\": \"519.99\",\n            \"Capacity\": \"256 GB\"\n        }\n    }\n]"
+        }
+      ]
+    },
+    {
+      "name": "Add a new object",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"Samsung Galaxy S24 FE\",\r\n  \"data\": {\r\n    \"year\": 2025,\r\n    \"price\": 600,\r\n    \"CPU model\": \"Exynos 2400e 4nm\",\r\n    \"Hard disk size\": \"128GB\"\r\n  }\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/objects",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "objects"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Add a new object Response",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Samsung Galaxy S24 FE\",\r\n  \"data\": {\r\n    \"year\": 2025,\r\n    \"price\": 600,\r\n    \"CPU model\": \"Exynos 2400e 4nm\",\r\n    \"Hard disk size\": \"128GB\"\r\n  }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/objects",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "objects"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": null,
+          "header": [
+            {
+              "key": "Date",
+              "value": "Sat, 12 Sep 2026 01:02:12 GMT"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json;charset=UTF-8"
+            },
+            {
+              "key": "Transfer-Encoding",
+              "value": "chunked"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Server",
+              "value": "cloudflare"
+            },
+            {
+              "key": "Nel",
+              "value": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}"
+            },
+            {
+              "key": "Vary",
+              "value": "Origin"
+            },
+            {
+              "key": "Vary",
+              "value": "Access-Control-Request-Method"
+            },
+            {
+              "key": "Vary",
+              "value": "Access-Control-Request-Headers"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-XSS-Protection",
+              "value": "1; mode=block"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, max-age=0, must-revalidate"
+            },
+            {
+              "key": "Pragma",
+              "value": "no-cache"
+            },
+            {
+              "key": "Expires",
+              "value": "0"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "DENY"
+            },
+            {
+              "key": "cf-cache-status",
+              "value": "DYNAMIC"
+            },
+            {
+              "key": "Report-To",
+              "value": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=FuU3U74AXNfp%2FRBG6uaRS0MBZYZ2hHQBOV8m8z8rFMZtWk28RvYZg3QMCC5FJtEI4ANl6ofXQFn5JOc3Nt40WjVd9hIi4l4p3hFx4pv7a8VpADMVM%2BfADhqc9LEbWqiA1VPiPwnP\"}]}"
+            },
+            {
+              "key": "Content-Encoding",
+              "value": "br"
+            },
+            {
+              "key": "CF-RAY",
+              "value": "a39afc40780addaa-SJO"
+            },
+            {
+              "key": "alt-svc",
+              "value": "h3=\":443\"; ma=86400"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"id\": \"ff808181a067127101a09322e5007dad\",\n    \"name\": \"Samsung Galaxy S24 FE\",\n    \"createdAt\": 1789174932736,\n    \"data\": {\n        \"year\": 2025,\n        \"price\": 600,\n        \"CPU model\": \"Exynos 2400e 4nm\",\n        \"Hard disk size\": \"128GB\"\n    }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Update an object",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"Samsung Galaxy S24 FE UPDATED\",\r\n  \"data\": {\r\n    \"year\": 2024,\r\n    \"price\": 500,\r\n    \"CPU model\": \"Exynos 2400e 4nm UPDATED\",\r\n    \"Hard disk size\": \"128GB UPDATED\"\r\n  }\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/objects/ff808181a067127101a09322e5007dad",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "objects",
+            "ff808181a067127101a09322e5007dad"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Update an object Response",
+          "originalRequest": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Samsung Galaxy S24 FE UPDATED\",\r\n  \"data\": {\r\n    \"year\": 2024,\r\n    \"price\": 500,\r\n    \"CPU model\": \"Exynos 2400e 4nm UPDATED\",\r\n    \"Hard disk size\": \"128GB UPDATED\"\r\n  }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/objects/ff808181a067127101a09322e5007dad",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "objects",
+                "ff808181a067127101a09322e5007dad"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": null,
+          "header": [
+            {
+              "key": "Date",
+              "value": "Sat, 12 Sep 2026 01:16:10 GMT"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json;charset=UTF-8"
+            },
+            {
+              "key": "Transfer-Encoding",
+              "value": "chunked"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Server",
+              "value": "cloudflare"
+            },
+            {
+              "key": "Nel",
+              "value": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}"
+            },
+            {
+              "key": "Vary",
+              "value": "Origin"
+            },
+            {
+              "key": "Vary",
+              "value": "Access-Control-Request-Method"
+            },
+            {
+              "key": "Vary",
+              "value": "Access-Control-Request-Headers"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-XSS-Protection",
+              "value": "1; mode=block"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, max-age=0, must-revalidate"
+            },
+            {
+              "key": "Pragma",
+              "value": "no-cache"
+            },
+            {
+              "key": "Expires",
+              "value": "0"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "DENY"
+            },
+            {
+              "key": "cf-cache-status",
+              "value": "DYNAMIC"
+            },
+            {
+              "key": "Report-To",
+              "value": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=ImHsTyFtP4JWZG9iOBMQRpKGOpovQxF40Jr3viOW0vKpK1qk5n3fdy0UPooDTUstqfAzwCWQKf%2FKWR4qLjWqjnhY8v2jghqyfXa%2Fkkq2DWMCu3enCtJcP6FMwDaqSYCDD%2BiGdH2f\"}]}"
+            },
+            {
+              "key": "Content-Encoding",
+              "value": "br"
+            },
+            {
+              "key": "CF-RAY",
+              "value": "a39b10b2698e92ff-SJO"
+            },
+            {
+              "key": "alt-svc",
+              "value": "h3=\":443\"; ma=86400"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"id\": \"ff808181a067127101a09322e5007dad\",\n    \"name\": \"Samsung Galaxy S24 FE UPDATED\",\n    \"updatedAt\": 1789175770168,\n    \"data\": {\n        \"year\": 2024,\n        \"price\": 500,\n        \"CPU model\": \"Exynos 2400e 4nm UPDATED\",\n        \"Hard disk size\": \"128GB UPDATED\"\n    }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Partially update and object",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/objects/ff808181a067127101a09322e5007dad",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "objects",
+            "ff808181a067127101a09322e5007dad"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Partially update and object Response",
+          "originalRequest": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Samsung Galaxy S24 FE UPDATED with patch\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/objects/ff808181a067127101a09322e5007dad",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "objects",
+                "ff808181a067127101a09322e5007dad"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": null,
+          "header": [
+            {
+              "key": "Date",
+              "value": "Sat, 12 Sep 2026 01:18:27 GMT"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json;charset=UTF-8"
+            },
+            {
+              "key": "Transfer-Encoding",
+              "value": "chunked"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Server",
+              "value": "cloudflare"
+            },
+            {
+              "key": "Nel",
+              "value": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}"
+            },
+            {
+              "key": "Vary",
+              "value": "Origin"
+            },
+            {
+              "key": "Vary",
+              "value": "Access-Control-Request-Method"
+            },
+            {
+              "key": "Vary",
+              "value": "Access-Control-Request-Headers"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-XSS-Protection",
+              "value": "1; mode=block"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, max-age=0, must-revalidate"
+            },
+            {
+              "key": "Pragma",
+              "value": "no-cache"
+            },
+            {
+              "key": "Expires",
+              "value": "0"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "DENY"
+            },
+            {
+              "key": "cf-cache-status",
+              "value": "DYNAMIC"
+            },
+            {
+              "key": "Report-To",
+              "value": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=%2B%2FxuN7QXFDJlEn4pVqza6AE6rcCl1WuDru%2B4CFw3WzekToDVjn8wk1iVQ6hgais7KcEksaCVFUcC3xD994XgkFjOE1hpNk%2FRXm8aKL%2BXwIykhsIf9ijeCipY5EIi5GYQ9v3WLgWj\"}]}"
+            },
+            {
+              "key": "Content-Encoding",
+              "value": "br"
+            },
+            {
+              "key": "CF-RAY",
+              "value": "a39b140e999b2b09-SJO"
+            },
+            {
+              "key": "alt-svc",
+              "value": "h3=\":443\"; ma=86400"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"id\": \"ff808181a067127101a09322e5007dad\",\n    \"name\": \"Samsung Galaxy S24 FE UPDATED with patch\",\n    \"updatedAt\": 1789175907805,\n    \"data\": {\n        \"year\": 2024,\n        \"price\": 500,\n        \"CPU model\": \"Exynos 2400e 4nm UPDATED\",\n        \"Hard disk size\": \"128GB UPDATED\"\n    }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Delete an object",
+      "request": {
+        "method": "DELETE",
+        "header": []
+      },
+      "response": [
+        {
+          "name": "Delete an object Response",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/objects/ff808181a067127101a0933274777df5",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "objects",
+                "ff808181a067127101a0933274777df5"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": null,
+          "header": [
+            {
+              "key": "Date",
+              "value": "Sat, 12 Sep 2026 01:20:06 GMT"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json;charset=UTF-8"
+            },
+            {
+              "key": "Transfer-Encoding",
+              "value": "chunked"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Server",
+              "value": "cloudflare"
+            },
+            {
+              "key": "Nel",
+              "value": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}"
+            },
+            {
+              "key": "Vary",
+              "value": "Origin"
+            },
+            {
+              "key": "Vary",
+              "value": "Access-Control-Request-Method"
+            },
+            {
+              "key": "Vary",
+              "value": "Access-Control-Request-Headers"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-XSS-Protection",
+              "value": "1; mode=block"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, max-age=0, must-revalidate"
+            },
+            {
+              "key": "Pragma",
+              "value": "no-cache"
+            },
+            {
+              "key": "Expires",
+              "value": "0"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "DENY"
+            },
+            {
+              "key": "cf-cache-status",
+              "value": "DYNAMIC"
+            },
+            {
+              "key": "Report-To",
+              "value": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=z7MSKcsSIodUkmFv21QC1eX8oX9Zhb5Jddv7dZ3jaS2mL2sjTa2HjLb50Nr7miCf59LGxfjiQDLk9ywHEMWl5MQyNPYWROOvOmDh5YKrqdInYzBp2xxsxPUhK9m%2F3QSlj6XXPUIw\"}]}"
+            },
+            {
+              "key": "Content-Encoding",
+              "value": "br"
+            },
+            {
+              "key": "CF-RAY",
+              "value": "a39b16779e122b09-SJO"
+            },
+            {
+              "key": "alt-svc",
+              "value": "h3=\":443\"; ma=86400"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"message\": \"Object with id = ff808181a067127101a0933274777df5 has been deleted.\"\n}"
+        }
+      ]
+    }
+  ]
+}
