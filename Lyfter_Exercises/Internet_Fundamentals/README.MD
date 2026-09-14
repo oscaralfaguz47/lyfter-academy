@@ -24,9 +24,9 @@
 
 ## 3. REST vs SOAP vs GraphQL
 
-| API type | Data format | Flexibility level                       | Implementation difficulty | Current use (High / Medium / Slow) |
+| API type | Data format | Flexibility level                       | Implementation difficulty | Current use (High / Medium / low)  |
 |----------|-------------|-----------------------------------------|---------------------------|------------------------------------|
-| REST     | JSON/XML    | Medium, the server defines the response | Low                       | Hig                                |
+| REST     | JSON/XML    | Medium, the server defines the response | Low                       | High                               |
 | SOAP     | XML only    | Low, the contract (WSDL) defines it     | High                      | Low                                |
 | GraphQL  | JSON        | High, the client defines the response   | Medium                    | Medium                             |
 
