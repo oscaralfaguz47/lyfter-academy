@@ -4,6 +4,7 @@ CREATE TABLE `ShoppingCartProduct`(
     `ProductId` INT UNSIGNED NOT NULL,
     `Quantity` INT NOT NULL
 );
+
 CREATE TABLE `ShoppingCart`(
     `ShoppingCartId` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `UserId` INT UNSIGNED NOT NULL
