@@ -45,8 +45,10 @@ CREATE TABLE CarOwners(
 
 CREATE TABLE InsurancePolicies(
     Id INTEGER PRIMARY KEY,
-    CarId INTEGER NOT NULL REFERENCES Cars(Id),
-    InsuranceCompanyId INTEGER NOT NULL REFERENCES CompanyInsurances(Id)
+    CarOwnerId INTEGER NOT NULL REFERENCES CarOwners(Id),
+    InsuranceCompanyId INTEGER NOT NULL REFERENCES CompanyInsurances(Id),
+    PolicyType TEXT NOT NULL,
+    UNIQUE(CarOwnerId, InsuranceCompanyId, PolicyType)
 );
 
 
@@ -56,5 +58,5 @@ CREATE INDEX IX_Cars_ModelId ON Cars(ModelId);
 CREATE INDEX IX_Cars_ColorId ON Cars(ColorId);
 CREATE INDEX IX_CarOwners_CarId ON CarOwners(CarId);
 CREATE INDEX IX_CarOwners_OwnerId ON CarOwners(OwnerId);
-CREATE INDEX IX_InsurancePolicies_CarId ON InsurancePolicies(CarId);
-CREATE INDEX IX_InsurancePolicies_InsuranceCompanyId On InsurancePolicies(InsuranceCompanyId);
+CREATE INDEX IX_InsurancePolicies_InsuranceCompanyId ON InsurancePolicies(InsuranceCompanyId);
+CREATE INDEX IX_InsurancePolicies_CarOwnerId ON InsurancePolicies(CarOwnerId);

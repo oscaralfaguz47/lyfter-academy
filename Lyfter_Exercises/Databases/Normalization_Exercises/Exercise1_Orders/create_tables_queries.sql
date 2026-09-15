@@ -2,7 +2,6 @@ CREATE TABLE Customers(
     Id INTEGER PRIMARY KEY,
     Name TEXT NOT NULL,
     Phone TEXT NOT NULL,
-    Address TEXT NOT NULL,
     CreationDate TEXT NOT NULL DEFAULT(datetime('now'))
 );
 
