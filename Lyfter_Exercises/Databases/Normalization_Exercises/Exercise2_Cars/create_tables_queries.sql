@@ -22,7 +22,7 @@ CREATE TABLE Owners(
     Phone TEXT NOT NULL
 );
 
-CREATE TABLE CompanyInsurances(
+CREATE TABLE InsuranceCompanies(
     Id INTEGER PRIMARY KEY,
     Name TEXT NOT NULL UNIQUE,
     Description TEXT
@@ -45,18 +45,22 @@ CREATE TABLE CarOwners(
 
 CREATE TABLE InsurancePolicies(
     Id INTEGER PRIMARY KEY,
-    CarOwnerId INTEGER NOT NULL REFERENCES CarOwners(Id),
-    InsuranceCompanyId INTEGER NOT NULL REFERENCES CompanyInsurances(Id),
-    PolicyType TEXT NOT NULL,
-    UNIQUE(CarOwnerId, InsuranceCompanyId, PolicyType)
+    InsuranceCompanyId INTEGER NOT NULL REFERENCES InsuranceCompanies(Id),
+    Name TEXT NOT NULL,
+    Description TEXT,
+    UNIQUE(InsuranceCompanyId, Name)
 );
 
+CREATE TABLE CarOwnerPolicies(
+    Id INTEGER PRIMARY KEY,
+    CarOwnerId INTEGER NOT NULL REFERENCES CarOwners(Id),
+    InsurancePolicyId INTEGER NOT NULL REFERENCES InsurancePolicies(Id),
+    UNIQUE(CarOwnerId, InsurancePolicyId)
+);
 
 -- Create indexes to improve performance
 CREATE INDEX IX_Models_MakeId ON Models(MakeId);
 CREATE INDEX IX_Cars_ModelId ON Cars(ModelId);
 CREATE INDEX IX_Cars_ColorId ON Cars(ColorId);
-CREATE INDEX IX_CarOwners_CarId ON CarOwners(CarId);
 CREATE INDEX IX_CarOwners_OwnerId ON CarOwners(OwnerId);
-CREATE INDEX IX_InsurancePolicies_InsuranceCompanyId ON InsurancePolicies(InsuranceCompanyId);
-CREATE INDEX IX_InsurancePolicies_CarOwnerId ON InsurancePolicies(CarOwnerId);
+CREATE INDEX IX_CarOwnerPolicies_InsurancePolicyId ON CarOwnerPolicies(InsurancePolicyId);
