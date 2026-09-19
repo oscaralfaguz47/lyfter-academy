@@ -1,4 +1,4 @@
-# Programming Languages in 2 Cards
+# Programming Languages
 
 The 2 topics: **Interpreted** and **Compiled**.
 

@@ -1,4 +1,4 @@
-# Data Structures in 5 Cards
+# Data Structures
 
 The 5 topics: **Linked List, Queue, Stack, Double Ended Queue, Binary Tree.**
 

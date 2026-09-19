@@ -1,4 +1,4 @@
-# Algorithms in 2 Cards
+# Algorithms
 
 The 2 topics: **Bubble Sort** and **Big O**.
 
