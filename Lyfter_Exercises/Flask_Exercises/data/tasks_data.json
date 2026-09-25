@@ -1,0 +1,20 @@
+[
+  {
+    "id": "993f6a73-74c8-4361-ae83-b7bc9e4b1ead",
+    "title": "Buy a new computer",
+    "description": "My current computer is not working as expected",
+    "status": "In Progress"
+  },
+  {
+    "id": "20c260ac-8566-4477-a2e9-804dba73fdee",
+    "title": "Talk with my partners",
+    "description": "Something is wrong with the sales.",
+    "status": "Done"
+  },
+  {
+    "id": "912f53e0-9b1f-4124-b130-352cc537f46b",
+    "title": "Complete Flask exercise from Lyfter learning",
+    "description": "In order to improve my knowledge I have to complete the exercises with the best practices",
+    "status": "Done"
+  }
+]

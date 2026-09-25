@@ -1,6 +1,6 @@
 
 from http import HTTPStatus
-from http.client import HTTPException
+from werkzeug.exceptions import HTTPException
 from api_response import ApiResponse
 
 
@@ -15,7 +15,7 @@ class APIError(Exception):
 class ValidationError(APIError):
     status_code = HTTPStatus.UNPROCESSABLE_ENTITY
 
-class NotFound(APIError):
+class NotFoundError(APIError):
     status_code = HTTPStatus.NOT_FOUND
 
 def register_error_handlers(app):
