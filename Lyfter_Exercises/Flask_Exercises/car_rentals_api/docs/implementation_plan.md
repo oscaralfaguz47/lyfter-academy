@@ -22,10 +22,10 @@ car_rentals_api/
 |   |-- api_response.py
 |   |-- models/
 |   |   |-- brand.py
-|   |   |-- models.py
+|   |   |-- vehicle_model.py
 |   |   |-- user.py
 |   |   |-- vehicle.py
-|   |   |-- rentals.py
+|   |   |-- rental.py
 |   |-- repositories/
 |   |   |-- brands_repository.py 
 |   |   |-- users_repository.py
@@ -53,7 +53,7 @@ car_rentals_api/
 users(id, full_name, username, email, password, birthdate, status, creation_date) 
 
 brands(id, name)
-models(id, name, brand_id)
+vehicle_models(id, name, brand_id)
 vehicles(id, model_id, year, status)
 rentals(id, user_id, vehicle_id, rental_date, status) 
 
