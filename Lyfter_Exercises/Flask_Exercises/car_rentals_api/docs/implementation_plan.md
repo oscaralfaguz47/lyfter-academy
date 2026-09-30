@@ -27,17 +27,17 @@ car_rentals_api/
 |   |   |-- vehicle.py
 |   |   |-- rental.py
 |   |-- repositories/
-|   |   |-- brands_repository.py 
-|   |   |-- users_repository.py
-|   |   |-- vehicle_models_repository.py
-|   |   |-- vehicles_repository.py
-|   |   |-- rentals_repository.py
+|   |   |-- brand_repository.py 
+|   |   |-- user_repository.py
+|   |   |-- vehicle_model_repository.py
+|   |   |-- vehicle_repository.py
+|   |   |-- rental_repository.py
 |   |-- services/
-|   |   |-- brands_services.py
-|   |   |-- users_services.py
-|   |   |-- vehicle_models_services.py
-|   |   |-- vehicles_services.py
-|   |   |-- rentals_services.py
+|   |   |-- brand_service.py
+|   |   |-- user_service.py
+|   |   |-- vehicle_model_service.py
+|   |   |-- vehicle_service.py
+|   |   |-- rental_service.py
 |   |-- routes/
 |   |   |-- brands.py
 |   |   |-- users.py

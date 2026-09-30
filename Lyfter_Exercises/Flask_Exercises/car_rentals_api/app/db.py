@@ -25,3 +25,7 @@ def close_connection(error=None):
 
 def init_app(app):
     app.teardown_appcontext(close_connection)
+
+# MY IMPORTANT NOTES TO REMEMBER:
+# The connection is opened automatically in every request and closes as well, if there's an error a rollback is executed
+# Here the commit is not executed, it must be implemented in the repository when everything was ok.
