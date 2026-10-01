@@ -20,8 +20,10 @@ def get_connection():
 def close_connection(error=None):
     conn = g.pop("db", None)
     if conn is not None:
-        conn.rollback() # Discard anything that was not committed explicitly
-        conn.close()
+        try:
+            conn.rollback() # Discard anything that was not committed explicitly
+        finally:
+            conn.close() # Always runs, even if rollback fails on a dead connection
 
 def init_app(app):
     app.teardown_appcontext(close_connection)

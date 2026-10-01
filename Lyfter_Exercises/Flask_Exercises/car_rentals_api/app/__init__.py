@@ -7,7 +7,9 @@ from app.api_response import ApiResponse
 from app import db
 from app.config import DevelopmentConfig
 from app.services.user_service import UserService
+from app.services.vehicle_service import VehicleService
 from app.repositories.user_repository import UserRepository
+from app.repositories.vehicle_repository import VehicleRepository
 
 def create_app(config_class=DevelopmentConfig):
     app = Flask(__name__)
@@ -28,6 +30,7 @@ def create_app(config_class=DevelopmentConfig):
             cursor.execute("SELECT 1") # Just proves the DB answers
         return ApiResponse.success("Status: healthy")
 
+    # ----------------- USERS -----------------
     # List of user filtering by username: users?username=oscar
     @app.route("/users", methods=["GET"])
     def list_users_handler():
@@ -47,6 +50,18 @@ def create_app(config_class=DevelopmentConfig):
         user_service = UserService(UserRepository())
         user = user_service.update_user_status(user_id, request.json)
         return ApiResponse.success("User status updated successfully", user.to_dict())
+
+
+    # ----------------- VEHICLES -----------------
+    @app.route("/vehicles", methods=["GET"])
+    def list_vehicles_handler():
+        model_id = request.args.get("model_id")
+        vehicle_service = VehicleService(VehicleRepository())
+        vehicles_list = vehicle_service.list_vehicles(model_id)
+        return ApiResponse.success(
+                "Vehicles retrieved successfully", 
+                [vehicle.to_dict() for vehicle in vehicles_list]
+            )
 
 
     return app

@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from app.models.exceptions import ModelValidationError
 from app.utils.dates import parse_iso_date
 
