@@ -17,7 +17,10 @@ class ValidationError(APIError):
     status_code = HTTPStatus.UNPROCESSABLE_ENTITY
 
 class NotFoundError(APIError):
-    status_code = HTTPStatus.NOT_FOUND
+    status_code = HTTPStatus.NOT_FOUND #404
+
+class ConflictError(APIError):
+    status_code = HTTPStatus.CONFLICT #409
 
 def register_error_handlers(app):
     @app.errorhandler(APIError)

@@ -32,8 +32,21 @@ def create_app(config_class=DevelopmentConfig):
     @app.route("/users", methods=["GET"])
     def list_users_handler():
         username = request.args.get("username")
-        user_services = UserService(UserRepository())
-        users_list = user_services.list_users(username)
+        user_service = UserService(UserRepository())
+        users_list = user_service.list_users(username)
         return ApiResponse.success("Users retrieved successfully", [user.to_dict() for user in users_list])
+
+    @app.route("/users", methods=["POST"])
+    def create_user_handler():
+        user_service = UserService(UserRepository())
+        user_created = user_service.create_user(request.json)
+        return ApiResponse.success("User created successfully", user_created.to_dict())
+
+    @app.route("/users/<int:user_id>/status", methods=["PATCH"])
+    def change_user_status_handler(user_id):
+        user_service = UserService(UserRepository())
+        user = user_service.update_user_status(user_id, request.json)
+        return ApiResponse.success("User status updated successfully", user.to_dict())
+
 
     return app
