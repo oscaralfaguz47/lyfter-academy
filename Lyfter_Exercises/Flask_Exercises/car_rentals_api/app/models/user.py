@@ -63,8 +63,8 @@ class User:
 
 @dataclass
 class UserSummary:
-     id:int
-     full_name: str
+    id:int
+    full_name: str
 
-     def to_dict(self):
-          return {"id": self.id, "full_name": self.full_name}
+    def to_dict(self):
+        return {"id": self.id, "full_name": self.full_name}

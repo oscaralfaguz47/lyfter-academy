@@ -1,7 +1,7 @@
 import logging
 logger = logging.getLogger(__name__)
 
-from app.errors import ValidationError, ConflictError, NotFoundError
+from app.http.errors import ValidationError, ConflictError, NotFoundError
 from app.models.user import User
 from app.models.exceptions import ModelValidationError
 from app.repositories.exceptions import DuplicateRecordError

@@ -1,4 +1,4 @@
-from app.errors import ValidationError
+from app.http.errors import ValidationError
 from app.models.vehicle import Vehicle
 from app.models.exceptions import ModelValidationError
 from app.models.enums import VehicleStatus
