@@ -16,14 +16,15 @@ class Vehicle:
         self.brand_id = brand_id
         self.brand_name = brand_name
 
+    @classmethod
     def create_vehicle(cls, *, model_id, year, status):
         valid_statuses = [s.value for s in VehicleStatus]
         errors = {}
-        if not isinstance(model_id, int):
+        if not isinstance(model_id, int) or isinstance(model_id, bool):
             errors["model_id"] = "The model_id should be an integer."
         elif not model_id:
             errors["model_id"] = "The model_id is required."
-        if not isinstance(year, int):
+        if not isinstance(year, int) or isinstance(year, bool):
             errors["year"] = "The year must be an integer."
         elif not year:
             errors["year"] = "The year is required."

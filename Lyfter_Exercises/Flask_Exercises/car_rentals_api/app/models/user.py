@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 from app.models.exceptions import ModelValidationError
 from app.utils.dates import parse_iso_date
 
@@ -58,3 +60,11 @@ class User:
             "status": self.status,
             "creation_date": self.creation_date
         }
+
+@dataclass
+class UserSummary:
+     id:int
+     full_name: str
+
+     def to_dict(self):
+          return {"id": self.id, "full_name": self.full_name}

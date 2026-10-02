@@ -8,8 +8,10 @@ from app import db
 from app.config import DevelopmentConfig
 from app.services.user_service import UserService
 from app.services.vehicle_service import VehicleService
+from app.services.rental_service import RentalService
 from app.repositories.user_repository import UserRepository
 from app.repositories.vehicle_repository import VehicleRepository
+from app.repositories.rental_repository import RentalRepository
 
 def create_app(config_class=DevelopmentConfig):
     app = Flask(__name__)
@@ -62,6 +64,28 @@ def create_app(config_class=DevelopmentConfig):
                 "Vehicles retrieved successfully", 
                 [vehicle.to_dict() for vehicle in vehicles_list]
             )
+
+    @app.route("/vehicles", methods=["POST"])
+    def create_vehicle_handler():
+        vehicle_service = VehicleService(VehicleRepository())
+        vehicle = vehicle_service.create_vehicle(request.get_json(silent=True))
+        return ApiResponse.success("Vehicle created successfully.", vehicle.to_dict())
+
+    @app.route("/vehicles/<int:vehicle_id>/status", methods=["PATCH"])
+    def update_status(vehicle_id):
+        vehicle_service = VehicleService(VehicleRepository())
+        vehicle = vehicle_service.update_status(vehicle_id, request.json)
+        return ApiResponse.success("Status updated successfully.", vehicle.to_dict())
+
+    # ----------------- RENTALS -----------------
+
+    @app.route("/rentals", methods=["GET"])
+    def list_rentals():
+        status = request.args.get("status")
+        rental_service = RentalService(RentalRepository())
+        rentals_list = rental_service.list_rentals(status)
+        return ApiResponse.success("Rentals retrieved successfully.", [rental.to_dict() for rental in rentals_list])
+
 
 
     return app
