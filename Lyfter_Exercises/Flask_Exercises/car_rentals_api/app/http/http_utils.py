@@ -1,9 +1,13 @@
-from flask import request
+import re
 
-from errors import APIError, ValidationError
+from flask import request
+from app.http.errors import APIError, ValidationError
+from app.utils.validators import check_str, clean_str
+
+
 
 # ---------- BODY ----------
-def get__json_body():
+def get_json_body():
     if not request.is_json:
         raise APIError("Content-Type must be application/json.")
     data = request.get_json(silent=True)
@@ -31,6 +35,14 @@ class QueryParams:
         if len(values) > 1:
             self.errors[name] = f"Must be sent only once, you sent {len(values)}."
             return None
+        return values[0]
+
+    def get_str(self, name, *, required=False, default=None, **rules):
+        raw = self._raw(name, required)
+        if raw is None:
+            return default
+        value = clean_str(raw, name, self.errors, **rules)
+        return default if value is None else value
 
     def raise_if_errors(self):
         if self.errors:

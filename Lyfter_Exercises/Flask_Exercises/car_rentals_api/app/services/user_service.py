@@ -22,8 +22,6 @@ class UserService:
         return self._repository.find_all(_parse_username_filter(username))
 
     def create_user(self, user_data):
-        if not isinstance(user_data, dict):
-            raise ValidationError("Body must be a JSON object")
         try:
             user_to_create = User.create(
                 full_name = user_data.get("full_name"),

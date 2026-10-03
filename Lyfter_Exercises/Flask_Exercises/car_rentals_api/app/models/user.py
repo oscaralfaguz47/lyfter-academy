@@ -1,7 +1,24 @@
 from dataclasses import dataclass
+from datetime import date
+import re
 
 from app.models.exceptions import ModelValidationError
 from app.utils.dates import parse_iso_date
+from app.utils.validators import clean_str, clean_date, clean_bool
+
+USERNAME_PATTERN = re.compile(r"[A-Za-z0-9]+(?:[._-][A-Za-z0-9]+)*", re.ASCII)
+USERNAME_MIN_LENGTH = 3
+USERNAME_MAX_LENGTH = 30
+
+FULL_NAME_MAX_LENGTH = 100
+
+EMAIL_PATTERN = re.compile(r"[^@\s]+@[^@\s]+\.[^@\s]+", re.ASCII)
+EMAIL_MAX_LENGTH = 80
+
+PASSWORD_MIN_LENGTH = 8
+PASSWORD_MAX_LENGTH = 20
+
+BIRTHDATE_MIN = date(1900,1,1)
 
 class User:
     def __init__(self, full_name, username, email, birthdate, status=True, *, user_id=None, creation_date=None, password=None):
@@ -17,27 +34,57 @@ class User:
     @classmethod
     def create(cls, *, full_name, username, email, password, birthdate, status=True):
         errors = {}
-        if not isinstance(full_name, str) or not full_name.strip():
-            errors["full_name"] = "The full name is required."
-        if not isinstance(username, str) or not username.strip():
-            errors["username"] = "The username is required."
-        elif len(username) > 30:
-            errors["username"] = "The username must be max 30 characters."
-        if not isinstance(email, str) or not email.strip():
-            errors["email"] = "The email es required."
-        if not isinstance(password, str) or not password.strip():
-            errors["password"] = "The password is required."
-        if parse_iso_date(birthdate) is None:
-            errors["birthdate"] = "The birthdate must be a valid date in YYYY-MM-DD format."
-        if not isinstance(status, bool):
-            errors["status"] = "The status must be true or false only."
+        full_name = clean_str(
+            full_name, 
+            "full_name", 
+            errors, 
+            strip=True,
+            max_length=FULL_NAME_MAX_LENGTH
+        )
+        username = clean_str(
+            username, 
+            "username", 
+            errors, 
+            strip=True,
+            min_length=USERNAME_MIN_LENGTH, 
+            max_length=USERNAME_MAX_LENGTH, 
+            pattern=USERNAME_PATTERN
+        )
+        email = clean_str(
+            email,
+            "email",
+            errors,
+            strip=True,
+            max_length=EMAIL_MAX_LENGTH,
+            pattern=EMAIL_PATTERN
+        )
+        password = clean_str(
+            password,
+            "password",
+            errors,
+            strip=False,
+            min_length=PASSWORD_MIN_LENGTH,
+            max_length=PASSWORD_MAX_LENGTH
+        )
+        birthdate = clean_date(
+            birthdate,
+            "birthdate",
+            errors,
+            min_date=BIRTHDATE_MIN,
+            max_date=date.today()
+        )
+        status = clean_bool(
+            status, 
+            "status", 
+            errors
+        )
         if errors:
                     raise ModelValidationError(errors)
         return cls(
-            full_name.strip(), 
-            username.strip().lower(), 
-            email.strip().lower(), 
-            parse_iso_date(birthdate), 
+            full_name, 
+            username.lower(), 
+            email.lower(), 
+            birthdate, 
             status, 
             password=password
         )
