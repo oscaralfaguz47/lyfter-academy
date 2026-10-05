@@ -21,6 +21,7 @@ FIND_ALL = """
     INNER JOIN vehicle_models vm ON vm.id = v.model_id
     INNER JOIN brands b ON b.id = vm.brand_id
     WHERE (%(status)s IS NULL OR r.status = %(status)s)
+    AND (%(user_id)s IS NULL OR  r.user_id = %(user_id)s)
     ORDER BY r.id
 """
 
@@ -34,7 +35,7 @@ FIND_BY_ID = """
     r.id,
     r.rental_date,
     r.status,
-    u.id AS user_id
+    u.id AS user_id,
     u.full_name AS user_full_name,
     v.id AS vehicle_id,
     v.year AS vehicle_year,
@@ -51,6 +52,11 @@ FIND_BY_ID = """
     WHERE r.id = %(rental_id)s
     ORDER BY r.rental_date
 """
+UPDATE_STATUS = """
+    UPDATE rentals SET status = %(status)s
+    WHERE id = %(rental_id)s
+    RETURNING id
+"""
 
 class RentalRepository:
     def __init__(self, get_conn=get_connection):
@@ -61,20 +67,31 @@ class RentalRepository:
             cursor.execute(query, params)
             return cursor.fetchone()
 
-    def find_all(self, status=None):
+    def find_all(self, status=None, user_id=None):
         with self._get_conn().cursor() as cursor:
-            cursor.execute(FIND_ALL, {"status":status})
+            cursor.execute(FIND_ALL, {"status":status, "user_id": user_id})
             return [Rental.from_row(row) for row in cursor.fetchall()]
 
-    def fin_by_id(self, rental_id):
-        row = self._fetch_one(FIND_BY_ID, {"rental_id", rental_id})
-        return Rental.from_row(row)
+    def find_by_id(self, rental_id):
+        row = self._fetch_one(FIND_BY_ID, {"rental_id": rental_id})
+        return Rental.from_row(row) if row else None
 
     def create(self, rental):
         conn = self._get_conn()
-        rental_id = self._fetch_one(INSERT, self._params(rental))
+        row = self._fetch_one(INSERT, self._params(rental))
         conn.commit()
-        return self.fin_by_id(rental_id)
+        return row["id"]
+
+    def update_status(self, rental_id, status):
+        conn = self._get_conn()
+        row = self._fetch_one(UPDATE_STATUS, {"rental_id": rental_id, "status": status})
+        conn.commit()
+        return self.find_by_id(row["id"])
+
+    def get_active_rentals_by_user_id(self, user_id):
+        with self._get_conn().cursor() as cursor:
+            cursor.execute(FIND_ALL, {"user_id": user_id, "status":"Active"})
+            return [Rental.from_row(row) for row in cursor.fetchall()]
 
     @staticmethod
     def _params(rental):

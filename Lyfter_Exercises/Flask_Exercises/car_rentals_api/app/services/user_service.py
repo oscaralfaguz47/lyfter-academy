@@ -5,21 +5,15 @@ from app.http.errors import ValidationError, ConflictError, NotFoundError
 from app.models.user import User
 from app.models.exceptions import ModelValidationError
 from app.repositories.exceptions import DuplicateRecordError
-
-def _parse_username_filter(username):
-    if username is None:
-        return None
-    normalized = username.strip().lower()
-    if len(normalized) > 30:
-        raise ValidationError("Invalid query params.", {"username": "The username must be max 30 characters."})
-    return normalized
+from app.utils.validators import clean_int
 
 class UserService:
-    def __init__(self, repository):
+    def __init__(self, repository, rental_repository):
         self._repository = repository
+        self._rental_repository = rental_repository
 
-    def list_users(self, username=None):
-        return self._repository.find_all(_parse_username_filter(username))
+    def list_users(self, username=None, full_name=None, email=None, birthdate=None, status=None):
+        return self._repository.find_all(username, full_name, email, birthdate, status)
 
     def create_user(self, user_data):
         try:
@@ -40,8 +34,6 @@ class UserService:
         return user_created
 
     def update_user_status(self, user_id, json_data):
-        if not isinstance(json_data, dict):
-            raise ValidationError("Body must be a JSON object")
         if "status" not in json_data:
             raise ValidationError("User data is invalid.", {"status": "This field is required."})
         if not isinstance(json_data["status"], bool):
@@ -51,4 +43,20 @@ class UserService:
             raise NotFoundError(f"User {user_id} does not exist.")
         logger.info("User '%s' status changed to %s.", user_id, json_data["status"])
         return user_updated
-    
+
+    def flag_user_as_non_paying(self, user_id):
+        errors = {}
+        user_id = clean_int(user_id, "user_id", errors)
+        if errors:
+            raise ValidationError("User data invalid.", errors)
+        unpaid_rentals = self._rental_repository.get_active_rentals_by_user_id(user_id)
+
+        message = ""
+        if len(unpaid_rentals) > 0:
+            message = f"The user has '{len(unpaid_rentals)}' pending rentals to complete."
+        else:
+            message = "The user is up to date, no pending rentals were found."
+        return {
+            "message": message,
+            "unpaid_rentals": unpaid_rentals
+        }

@@ -37,14 +37,12 @@ class User:
             full_name, 
             "full_name", 
             errors, 
-            strip=True,
             max_length=FULL_NAME_MAX_LENGTH
         )
         username = clean_str(
             username, 
             "username", 
             errors, 
-            strip=True,
             min_length=USERNAME_MIN_LENGTH, 
             max_length=USERNAME_MAX_LENGTH, 
             pattern=USERNAME_PATTERN
@@ -53,7 +51,6 @@ class User:
             email,
             "email",
             errors,
-            strip=True,
             max_length=EMAIL_MAX_LENGTH,
             pattern=EMAIL_PATTERN
         )

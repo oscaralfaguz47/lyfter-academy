@@ -2,7 +2,7 @@ import re
 
 from flask import request
 from app.http.errors import APIError, ValidationError
-from app.utils.validators import check_str, clean_str
+from app.utils.validators import clean_str, clean_date
 
 
 
@@ -43,6 +43,36 @@ class QueryParams:
             return default
         value = clean_str(raw, name, self.errors, **rules)
         return default if value is None else value
+
+    def get_int(self, name, *, required=False, default=None):
+        raw = self._raw(name, required)
+        if raw is None:
+            return default
+        try:
+            value = int(raw)
+        except ValueError:
+            self.errors[name] = "Must be an integer."
+            return default
+        return value
+
+    def get_date(self, name, *, required=False, default=None, **rules):
+        raw = self._raw(name, required)
+        if raw is None:
+            return default
+        value = clean_date(raw, name, self.errors, **rules)
+        return default if value is None else value
+
+    def get_bool(self, name, *, required=False, default=None):
+        raw = self._raw(name, required)
+        if raw is None:
+            return default
+        value = raw.strip().lower()
+        if value in {"true":"1"}:
+            return True
+        if value in {"false": "0"}:
+            return False
+        self.errors[name] = "Must be true or false."
+        return default
 
     def raise_if_errors(self):
         if self.errors:

@@ -66,3 +66,19 @@ def clean_bool(value, name, errors, *, required=True, default=None):
         errors[name]= "Must be true or false."
         return default
     return value
+
+def clean_int(value, name, errors, *, required=True, min_value=None, max_value=None):
+    if value is None:
+        if required:
+            errors[name] = "This field is required."
+        return None
+    if isinstance(value, bool) or not isinstance(value, int):
+        errors[name] = "Must be an integer."
+        return None
+    if min_value is not None and value < min_value:
+        errors[name] = f"Must be at least {min_value}."
+        return None
+    if max_value is not None and value > max_value:
+        errors[name] = f"Must be at most {max_value}."
+        return None
+    return value

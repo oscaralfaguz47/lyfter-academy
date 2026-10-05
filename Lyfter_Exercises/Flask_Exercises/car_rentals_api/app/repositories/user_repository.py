@@ -10,6 +10,10 @@ COLUMNS = "id, full_name, username, email, birthdate, status, creation_date"
 FIND_ALL = f"""
     SELECT {COLUMNS} FROM users
     WHERE (%(username)s::text IS NULL OR username ILIKE '%%' || %(username)s || '%%')
+    AND (%(full_name)s IS NULL OR full_name = %(full_name)s)
+    AND (%(email)s::text IS NULL OR email ILIKE '%%' || %(email)s || '%%')
+    AND (%(birthdate)s IS NULL OR birthdate = %(birthdate)s)
+    AND (%(status)s IS NULL OR status = %(status)s)
     ORDER BY id
 """
 INSERT = f"""
@@ -30,9 +34,17 @@ class UserRepository:
             cursor.execute(query, params)
             return cursor.fetchone()
 
-    def find_all(self, username=None):
+    def find_all(self, username=None, full_name=None, email=None, birthdate=None, status=None):
         with self._get_conn().cursor() as cursor:
-            cursor.execute(FIND_ALL, {"username": username})
+            cursor.execute(
+                FIND_ALL, {
+                    "username": username,
+                    "full_name": full_name,
+                    "email": email,
+                    "birthdate": birthdate,
+                    "status": status
+                }
+            )
             return [User.from_row(row) for row in cursor.fetchall()]
 
     def create(self, user):

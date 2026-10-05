@@ -1,6 +1,7 @@
 
 from app.models.enums import VehicleStatus
 from app.models.exceptions import ModelValidationError
+from app.utils.validators import clean_int, clean_str
 
 class Vehicle:
     def __init__(
@@ -20,17 +21,12 @@ class Vehicle:
     def create_vehicle(cls, *, model_id, year, status):
         valid_statuses = [s.value for s in VehicleStatus]
         errors = {}
-        if not isinstance(model_id, int) or isinstance(model_id, bool):
-            errors["model_id"] = "The model_id should be an integer."
-        elif not model_id:
-            errors["model_id"] = "The model_id is required."
-        if not isinstance(year, int) or isinstance(year, bool):
-            errors["year"] = "The year must be an integer."
-        elif not year:
-            errors["year"] = "The year is required."
-        if not isinstance(status, str) or not status.strip():
-            errors["status"] = "The status is required."
-        elif status.strip() not in valid_statuses:
+
+        model_id = clean_int(model_id, "model_id", errors, required=True)
+        year = clean_int(year, "year", errors, required=True)
+        status = clean_str(status, "status", errors, required=True)
+        
+        if status.strip() not in valid_statuses:
             errors["status"] = f"Valid status only: {', '.join(valid_statuses)}"
 
         if errors:

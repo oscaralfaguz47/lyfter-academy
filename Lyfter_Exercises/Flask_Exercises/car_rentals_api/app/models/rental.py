@@ -2,6 +2,7 @@ from app.models.enums import RentalStatus
 from app.models.exceptions import ModelValidationError
 from app.models.vehicle import Vehicle
 from app.models.user import UserSummary
+from app.utils.validators import clean_int, clean_str
 
 class Rental:
     def __init__(
@@ -28,17 +29,11 @@ class Rental:
         errors = {}
         valid_statuses = [s.value for s in RentalStatus]
 
-        for field, value in (("user_id", user_id), ("vehicle_id", vehicle_id)):
-            if value is None:
-                errors[field] = "This field is required."
-            elif isinstance(value, bool) or not isinstance(value, int):
-                errors[field] = "Must be an integer."
-            elif value <= 0:
-                errors[field] = "Must be greater than 0."
-        
-        if not isinstance(status, str) or not status.strip():
-            errors["status"] = "The status is required."
-        elif status not in valid_statuses:
+        user_id = clean_int(user_id, "user_id", errors)
+        vehicle_id = clean_int(vehicle_id, "vehicle_id", errors)
+        status = clean_str(status, "status", errors)
+
+        if status not in valid_statuses:
             errors["status"] = f"The status must be only: {', '.join(valid_statuses)}"
 
         if errors:

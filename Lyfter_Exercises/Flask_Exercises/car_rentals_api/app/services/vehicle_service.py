@@ -17,8 +17,6 @@ class VehicleService:
         return self._repository.fetch_all(model_id_parameter)
 
     def create_vehicle(self, data):
-        if not isinstance(data, dict):
-            raise ValidationError("Body must be a valid JSON.")
         try:
             vehicle_to_create = Vehicle.create_vehicle(
                 model_id=data.get("model_id"),
@@ -33,8 +31,6 @@ class VehicleService:
     def update_status(self, vehicle_id, json_data):
         valid_statuses = [s.value for s in VehicleStatus]
         status = json_data["status"]
-        if not isinstance(json_data, dict):
-            raise ValidationError("Body must be a JSON object")
         if not isinstance(status, str) or not status.strip():
             raise ValidationError("User data is invalid.", {"status": "This field is required."})
         elif status not in valid_statuses:

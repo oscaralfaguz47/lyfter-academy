@@ -1,7 +1,8 @@
-from flask import Blueprint, request
+from flask import Blueprint
 from app.services.vehicle_service import VehicleService
 from app.repositories.vehicle_repository import VehicleRepository
 from app.http.api_response import ApiResponse
+from app.http.http_utils import get_json_body, QueryParams
 
 vehicles_bp = Blueprint("vehicles", __name__, url_prefix="/vehicles")
 
@@ -11,7 +12,9 @@ def _service():
 # List of vehicles filtering by model_id
 @vehicles_bp.get("")
 def list_vehicles_handler():
-    model_id = request.args.get("model_id")
+    params = QueryParams(allowed={"model_id"})
+    model_id = params.get_int("model_id")
+    params.raise_if_errors()
     vehicles_list = _service().list_vehicles(model_id)
     return ApiResponse.success(
             "Vehicles retrieved successfully", 
@@ -20,10 +23,10 @@ def list_vehicles_handler():
 
 @vehicles_bp.post("")
 def create_vehicle_handler():
-    vehicle = _service().create_vehicle(request.get_json(silent=True))
+    vehicle = _service().create_vehicle(get_json_body())
     return ApiResponse.success("Vehicle created successfully.", vehicle.to_dict())
 
 @vehicles_bp.patch("/<int:vehicle_id>/status")
-def update_status(vehicle_id):
-    vehicle = _service().update_status(vehicle_id, request.json)
+def update_status_handler(vehicle_id):
+    vehicle = _service().update_status(vehicle_id, get_json_body())
     return ApiResponse.success("Status updated successfully.", vehicle.to_dict())
