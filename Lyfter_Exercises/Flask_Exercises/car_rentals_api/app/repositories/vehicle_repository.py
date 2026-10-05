@@ -40,6 +40,9 @@ UPDATE_STATUS = """
     UPDATE vehicles SET status = %(status)s 
     WHERE id = %(vehicle_id)s RETURNING id
 """
+GET_ALL_FOR_BACKUP = """
+    SELECT * FROM vehicles
+"""
 
 class VehicleRepository:
     def __init__(self, get_conn=get_connection):
@@ -71,6 +74,11 @@ class VehicleRepository:
         row = self._fetch_one(UPDATE_STATUS, {"vehicle_id": vehicle_id, "status": status })
         conn.commit()
         return row["id"]
+
+    def get_all_for_backup(self):
+        with self._get_conn().cursor() as cursor:
+            cursor.execute(GET_ALL_FOR_BACKUP)
+            return [Vehicle.from_row(row) for row in cursor.fetchall()]
 
     @staticmethod
     def _params(vehicle):

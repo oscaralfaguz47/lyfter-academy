@@ -58,6 +58,10 @@ UPDATE_STATUS = """
     RETURNING id
 """
 
+GET_ALL_FOR_BACKUP = """
+    SELECT * FROM rentals
+"""
+
 class RentalRepository:
     def __init__(self, get_conn=get_connection):
         self._get_conn = get_conn
@@ -91,6 +95,11 @@ class RentalRepository:
     def get_active_rentals_by_user_id(self, user_id):
         with self._get_conn().cursor() as cursor:
             cursor.execute(FIND_ALL, {"user_id": user_id, "status":"Active"})
+            return [Rental.from_row(row) for row in cursor.fetchall()]
+
+    def get_all_for_backup(self):
+        with self._get_conn().cursor() as cursor:
+            cursor.execute(GET_ALL_FOR_BACKUP)
             return [Rental.from_row(row) for row in cursor.fetchall()]
 
     @staticmethod

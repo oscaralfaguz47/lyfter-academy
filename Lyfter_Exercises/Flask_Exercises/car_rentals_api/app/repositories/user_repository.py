@@ -24,6 +24,9 @@ INSERT = f"""
 UPDATE_STATUS = f"""
     UPDATE users SET status = %(status)s WHERE id = %(id)s RETURNING {COLUMNS}
 """
+GET_ALL_FOR_BACKUP = """
+    SELECT * FROM users
+"""
 
 class UserRepository:
     def __init__(self, get_conn=get_connection):
@@ -60,7 +63,11 @@ class UserRepository:
         row = self._fetch_one(UPDATE_STATUS, {"id": user_id, "status": status})
         self._get_conn().commit()
         return User.from_row(row) if row else None # Return the updated user or None if it doesn't exist
-        
+
+    def get_all_for_backup(self):
+        with self._get_conn().cursor() as cursor:
+            cursor.execute(GET_ALL_FOR_BACKUP)
+            return [User.from_row(row) for row in cursor.fetchall*()]
 
     @staticmethod
     def _params(user):
