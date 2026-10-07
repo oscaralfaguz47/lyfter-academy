@@ -77,6 +77,5 @@ class VehicleRepository:
     def _params(vehicle):
         return {
             "model_id": vehicle.model_id,
-            "year": vehicle.year,
-            "status": vehicle.status
+            "year": vehicle.year
         }

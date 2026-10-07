@@ -13,7 +13,6 @@ class Vehicle:
         self.year = year
         self.status = status
         self.id = vehicle_id
-        self.model_id = model_id
         self.vehicle_model = vehicle_model
         self.vehicle_brand = vehicle_brand
 
@@ -37,7 +36,6 @@ class Vehicle:
         vehicle_model = VehicleModel(
             row["model_name"], row["brand_id"],
             model_id=row["model_id"]
-            
         )
         vehicle_brand = Brand(
             row["brand_name"],
@@ -58,5 +56,5 @@ class Vehicle:
             "year": self.year,
             "status": self.status,
             "model": self.vehicle_model.to_dict() if self.vehicle_model else self.model_id,
-            "brand": self.vehicle_brand.to_dict() if self.vehicle_brand else self.model.brand.id
+            "brand": self.vehicle_brand.to_dict() if self.vehicle_brand else (self.vehicle_model.brand_id if self.vehicle_model else None)
         }

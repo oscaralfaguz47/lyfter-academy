@@ -92,11 +92,6 @@ class RentalRepository:
         row = self._fetch_one(UPDATE_RENTAL_STATUS, {"rental_id": rental_id, "status": "Cancelled"})
         return row["vehicle_id"]if row else None
 
-    def get_active_rentals_by_user_id(self, user_id):
-        with self._get_conn().cursor() as cursor:
-            cursor.execute(FIND_ALL, {"user_id": user_id, "status":"Active"})
-            return [Rental.from_row(row) for row in cursor.fetchall()]
-
     @staticmethod
     def _params(rental):
         return {

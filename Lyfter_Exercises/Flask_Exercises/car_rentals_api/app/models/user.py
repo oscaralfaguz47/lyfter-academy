@@ -3,7 +3,7 @@ from datetime import date
 import re
 
 from app.models.exceptions import ModelValidationError
-from app.utils.validators import clean_str, clean_date, clean_bool
+from app.utils.validators import clean_str, clean_date
 
 USERNAME_PATTERN = re.compile(r"[A-Za-z0-9]+(?:[._-][A-Za-z0-9]+)*", re.ASCII)
 USERNAME_MIN_LENGTH = 3

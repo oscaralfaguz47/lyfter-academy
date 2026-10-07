@@ -1,10 +1,9 @@
-from app.models.enums import RentalStatus
 from app.models.exceptions import ModelValidationError
 from app.models.vehicle import Vehicle
 from app.models.vehicle_model import VehicleModel
 from app.models.brand import Brand
 from app.models.user import UserSummary
-from app.utils.validators import clean_int, clean_str
+from app.utils.validators import clean_int
 
 class Rental:
     def __init__(
@@ -44,7 +43,7 @@ class Rental:
     def from_row(cls, row):
         vehicle_model = VehicleModel(
             row["vehicle_model_name"], row["vehicle_brand_id"],
-            model_id=row["id"]
+            model_id=row["vehicle_model_id"]
         )
         vehicle_brand = Brand(
             row["vehicle_brand_name"],

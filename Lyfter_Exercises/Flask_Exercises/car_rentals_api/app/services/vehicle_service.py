@@ -9,13 +9,7 @@ class VehicleService:
         self._vehicle_model_repository = vehicle_model_repository
 
     def list_vehicles(self, model_id=None):
-        model_id_parameter = model_id
-        if model_id is not None:
-            try:
-                model_id_parameter = int(model_id_parameter)
-            except ValueError:
-                raise ValidationError("Invalid query params.", {"model_id": "The model_id must be an integer"})
-        return self._repository.fetch_all(model_id_parameter)
+        return self._repository.fetch_all(model_id)
 
     def create_vehicle(self, data):
         try:
@@ -27,7 +21,7 @@ class VehicleService:
             raise ValidationError("Vehicle data is invalid.", error.errors) from error
         model = self._vehicle_model_repository.find_by_id(vehicle_to_create.model_id)
         if model is None:
-            NotFoundError(f"Model {vehicle_to_create.model_id} does not exist.")
+            raise NotFoundError(f"Model {vehicle_to_create.model_id} does not exist.")
 
         with transaction():
             vehicle_id = self._repository.create(vehicle_to_create)

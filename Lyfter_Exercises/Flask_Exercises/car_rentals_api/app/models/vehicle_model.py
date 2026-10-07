@@ -9,7 +9,7 @@ class VehicleModel:
 
     @classmethod
     def from_row(cls, row):
-        brand = Brand(row["brand_name"], brand_id=row["id"])
+        brand = Brand(row["brand_name"], brand_id=row["brand_id"])
         return cls(
             row['name'],
             row["brand_id"],

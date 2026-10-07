@@ -34,8 +34,8 @@ FLAG_USER_AS_NON_PAYING = """
 WHERE u.id = %(user_id)s 
 RETURNING u.id, u.has_pending_payments
 """
-FIND_BY_ID = """
-    SELECT * FROM users WHERE id = %(user_id)s
+FIND_BY_ID = f"""
+    SELECT {COLUMNS} FROM users WHERE id = %(user_id)s
 """
 
 class UserRepository:

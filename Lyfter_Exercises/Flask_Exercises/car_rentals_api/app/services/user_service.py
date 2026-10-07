@@ -6,7 +6,7 @@ from app.http.errors import ValidationError, ConflictError, NotFoundError
 from app.models.user import User
 from app.models.exceptions import ModelValidationError
 from app.repositories.exceptions import DuplicateRecordError
-from app.utils.validators import clean_int, clean_bool
+from app.utils.validators import clean_bool
 
 class UserService:
     def __init__(self, repository):
@@ -37,10 +37,7 @@ class UserService:
 
     def update_user_status(self, user_id, json_data):
         errors ={}
-        if "status" not in json_data:
-            errors["status"] = "This field is required."
-
-        status = clean_bool(json_data["status"], "status", errors)
+        status = clean_bool(json_data.get("status"), "status", errors)
 
         if errors:
             raise ValidationError("User data is invalid.", errors)

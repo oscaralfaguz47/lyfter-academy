@@ -15,7 +15,7 @@ class RentalService:
         valid_statuses = [s.value for s in RentalStatus]
         if status is not None:
             if status not in valid_statuses:    
-                raise ValidationError("Invalid params.", {"status": f"The status must by only: {', '.join(valid_statuses)}"})
+                raise ValidationError("Invalid params.", {"status": f"The status must be only: {', '.join(valid_statuses)}"})
         return self._repository.find_all(status, user_id=user_id, vehicle_id=vehicle_id)
 
     def create_rental(self, data):

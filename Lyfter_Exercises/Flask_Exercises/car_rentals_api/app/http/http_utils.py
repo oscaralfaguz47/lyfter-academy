@@ -1,5 +1,3 @@
-import re
-
 from flask import request
 from app.http.errors import APIError, ValidationError
 from app.utils.validators import clean_str, clean_date
@@ -67,9 +65,9 @@ class QueryParams:
         if raw is None:
             return default
         value = raw.strip().lower()
-        if value in {"true":"1"}:
+        if value in {"true","1"}:
             return True
-        if value in {"false": "0"}:
+        if value in {"false", "0"}:
             return False
         self.errors[name] = "Must be true or false."
         return default

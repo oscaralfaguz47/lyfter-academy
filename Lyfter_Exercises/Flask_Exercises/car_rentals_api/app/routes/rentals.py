@@ -9,7 +9,7 @@ from app.repositories.user_repository import UserRepository
 from app.http.api_response import ApiResponse
 from app.http.http_utils import QueryParams, get_json_body
 
-rentals_bp = Blueprint("/rentals", __name__, url_prefix="/rentals")
+rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 
 def _service():
    return RentalService(RentalRepository(), VehicleRepository(), UserRepository())
@@ -19,8 +19,8 @@ def _service():
 def list_rentals():
    params = QueryParams(allowed={"status", "user_id", "vehicle_id"})
    status = params.get_str("status")
-   user_id = params.get_str("user_id")
-   vehicle_id = params.get_str("vehicle_id")
+   user_id = params.get_int("user_id")
+   vehicle_id = params.get_int("vehicle_id")
    params.raise_if_errors()
    rentals_list = _service().list_rentals(status=status, user_id=user_id, vehicle_id=vehicle_id)
    return ApiResponse.success("Rentals retrieved successfully.", [rental.to_dict() for rental in rentals_list])
