@@ -1,11 +1,12 @@
-from app.http.errors import ValidationError
+from app.http.errors import ValidationError, NotFoundError
 from app.models.vehicle import Vehicle
 from app.models.exceptions import ModelValidationError
-from app.models.enums import VehicleStatus
+from app.db import transaction
 
 class VehicleService:
-    def __init__(self, repository):
+    def __init__(self, repository, vehicle_model_repository):
         self._repository = repository
+        self._vehicle_model_repository = vehicle_model_repository
 
     def list_vehicles(self, model_id=None):
         model_id_parameter = model_id
@@ -20,20 +21,15 @@ class VehicleService:
         try:
             vehicle_to_create = Vehicle.create_vehicle(
                 model_id=data.get("model_id"),
-                year=data.get("year"),
-                status=data.get("status")
+                year=data.get("year")
                 )
         except ModelValidationError as error:
             raise ValidationError("Vehicle data is invalid.", error.errors) from error
-        vehicle_id = self._repository.create(vehicle_to_create)
-        return self._repository.get_by_id(vehicle_id)
+        model = self._vehicle_model_repository.find_by_id(vehicle_to_create.model_id)
+        if model is None:
+            NotFoundError(f"Model {vehicle_to_create.model_id} does not exist.")
 
-    def update_status(self, vehicle_id, json_data):
-        valid_statuses = [s.value for s in VehicleStatus]
-        status = json_data["status"]
-        if not isinstance(status, str) or not status.strip():
-            raise ValidationError("User data is invalid.", {"status": "This field is required."})
-        elif status not in valid_statuses:
-            raise ValidationError("Vehicle data is invalid.", {"status": f"Must be only: {', '.join(valid_statuses)}"})
-        vehicle_id = self._repository.update_status(vehicle_id, status)
+        with transaction():
+            vehicle_id = self._repository.create(vehicle_to_create)
+        
         return self._repository.get_by_id(vehicle_id)

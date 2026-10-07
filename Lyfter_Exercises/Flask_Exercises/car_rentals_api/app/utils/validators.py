@@ -34,7 +34,7 @@ def clean_str(value, name, errors, *, required=True, strip=True, **rules):
 def clean_date(value, name, errors, *, required=True, min_date=None, max_date=None):
     if value is None:
         if required:
-            errors[value] = "This field is required."
+            errors[name] = "This field is required."
         return None
 
     if isinstance(value, date) and not isinstance(value, datetime):

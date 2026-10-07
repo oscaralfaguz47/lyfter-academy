@@ -20,7 +20,7 @@ PASSWORD_MAX_LENGTH = 20
 BIRTHDATE_MIN = date(1900,1,1)
 
 class User:
-    def __init__(self, full_name, username, email, birthdate, status=True, *, user_id=None, creation_date=None, password=None):
+    def __init__(self, full_name, username, email, birthdate, *, status=None, user_id=None, creation_date=None, password=None, has_pending_payments=False):
         self.full_name = full_name
         self.username = username
         self.email = email
@@ -29,9 +29,10 @@ class User:
         self.status = status
         self.id = user_id
         self.creation_date = creation_date
+        self.has_pending_payments = has_pending_payments
 
     @classmethod
-    def create(cls, *, full_name, username, email, password, birthdate, status=True):
+    def create(cls, *, full_name, username, email, password, birthdate):
         errors = {}
         full_name = clean_str(
             full_name, 
@@ -69,11 +70,6 @@ class User:
             min_date=BIRTHDATE_MIN,
             max_date=date.today()
         )
-        status = clean_bool(
-            status, 
-            "status", 
-            errors
-        )
         if errors:
                     raise ModelValidationError(errors)
         return cls(
@@ -81,7 +77,7 @@ class User:
             username.lower(), 
             email.lower(), 
             birthdate, 
-            status, 
+            status=True,
             password=password
         )
 
@@ -89,7 +85,9 @@ class User:
     def from_row(cls, row):
         return cls(
             row["full_name"], row["username"], row["email"],
-            row["birthdate"], row["status"], 
+            row["birthdate"], 
+            status=row["status"], 
+            has_pending_payments=row["has_pending_payments"],
             user_id=row["id"], creation_date=row["creation_date"]
         )
 
@@ -101,7 +99,8 @@ class User:
             "email": self.email,
             "birthdate": self.birthdate,
             "status": self.status,
-            "creation_date": self.creation_date
+            "creation_date": self.creation_date,
+            "has_pending_payments": self.has_pending_payments
         }
 
 @dataclass

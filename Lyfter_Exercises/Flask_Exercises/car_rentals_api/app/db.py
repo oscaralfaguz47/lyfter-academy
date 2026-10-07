@@ -1,3 +1,5 @@
+from contextlib import contextmanager
+
 import psycopg2
 from flask import current_app, g
 from psycopg2.extras import RealDictCursor
@@ -15,6 +17,16 @@ def get_connection():
             cursor_factory=RealDictCursor # The rows come back as dicts: row["name"]
         )
     return g.db
+
+@contextmanager
+def transaction():
+    conn = get_connection()
+    try:
+        yield conn
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
 # It runs at the end of every request, even if it failed
 def close_connection(error=None):

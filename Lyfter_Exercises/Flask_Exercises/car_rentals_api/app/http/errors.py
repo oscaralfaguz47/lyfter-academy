@@ -6,7 +6,7 @@ from app.http.api_response import ApiResponse
 
 
 class APIError(Exception):
-    status_code = HTTPStatus.BAD_REQUEST
+    status_code = HTTPStatus.BAD_REQUEST #400
 
     def __init__(self, message, errors=None):
         super().__init__(message)
@@ -14,7 +14,7 @@ class APIError(Exception):
         self.errors = errors or {}
 
 class ValidationError(APIError):
-    status_code = HTTPStatus.UNPROCESSABLE_ENTITY
+    status_code = HTTPStatus.UNPROCESSABLE_ENTITY #422
 
 class NotFoundError(APIError):
     status_code = HTTPStatus.NOT_FOUND #404

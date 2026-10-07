@@ -17,7 +17,7 @@ FIND_ALL = """
 """
 INSERT = """
     INSERT INTO vehicles (model_id, year, status) 
-    VALUES(%(model_id)s, %(year)s, %(status)s)
+    VALUES(%(model_id)s, %(year)s, 'Available')
     RETURNING id
 """
 
@@ -37,8 +37,10 @@ FIND_BY_ID = """
 """
 
 UPDATE_STATUS = """
-    UPDATE vehicles SET status = %(status)s 
-    WHERE id = %(vehicle_id)s RETURNING id
+    UPDATE vehicles SET status = %(status_for_update)s
+    WHERE status = %(current_status)s 
+    AND id = %(vehicle_id)s
+    RETURNING id
 """
 
 class VehicleRepository:
@@ -50,7 +52,6 @@ class VehicleRepository:
             cursor.execute(query, params)
             return cursor.fetchone()
             
-
     def fetch_all(self, model_id=None):
         with self._get_conn().cursor() as cursor:
             cursor.execute(FIND_ALL, {"model_id": model_id})
@@ -61,16 +62,16 @@ class VehicleRepository:
         return Vehicle.from_row(row) if row else None
 
     def create(self, vehicle):
-        conn = self._get_conn()
         row = self._fetch_one(INSERT, self._params(vehicle))
-        conn.commit()
         return row["id"]
 
-    def update_status(self, vehicle_id, status):
-        conn = self._get_conn()
-        row = self._fetch_one(UPDATE_STATUS, {"vehicle_id": vehicle_id, "status": status })
-        conn.commit()
-        return row["id"]
+    def mark_as_rented(self, vehicle_id):
+        row = self._fetch_one(UPDATE_STATUS, {"vehicle_id": vehicle_id, "status_for_update": "Rented", "current_status": "Available"})
+        return row["id"] if row else None
+
+    def mark_as_available(self, vehicle_id):
+        row = self._fetch_one(UPDATE_STATUS, {"vehicle_id": vehicle_id, "status_for_update": "Available", "current_status": "Rented"})
+        return row["id"] if row else None 
 
     @staticmethod
     def _params(vehicle):

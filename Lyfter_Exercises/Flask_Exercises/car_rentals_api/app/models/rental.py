@@ -1,6 +1,8 @@
 from app.models.enums import RentalStatus
 from app.models.exceptions import ModelValidationError
 from app.models.vehicle import Vehicle
+from app.models.vehicle_model import VehicleModel
+from app.models.brand import Brand
 from app.models.user import UserSummary
 from app.utils.validators import clean_int, clean_str
 
@@ -8,9 +10,9 @@ class Rental:
     def __init__(
         self, 
         user_id, 
-        vehicle_id, 
-        status, 
+        vehicle_id,  
         *, 
+        status=None,
         rental_id=None, 
         rental_date=None,
         user=None,
@@ -25,36 +27,39 @@ class Rental:
         self.vehicle = vehicle
 
     @classmethod
-    def create_rental(cls, *, user_id, vehicle_id, status):
+    def create_rental(cls, *, user_id, vehicle_id):
         errors = {}
-        valid_statuses = [s.value for s in RentalStatus]
 
         user_id = clean_int(user_id, "user_id", errors)
         vehicle_id = clean_int(vehicle_id, "vehicle_id", errors)
-        status = clean_str(status, "status", errors)
-
-        if status not in valid_statuses:
-            errors["status"] = f"The status must be only: {', '.join(valid_statuses)}"
 
         if errors:
             raise ModelValidationError(errors)
         return cls(
             user_id,
-            vehicle_id,
-            status.strip()
+            vehicle_id
         )
 
     @classmethod
     def from_row(cls, row):
+        vehicle_model = VehicleModel(
+            row["vehicle_model_name"], row["vehicle_brand_id"],
+            model_id=row["id"]
+        )
+        vehicle_brand = Brand(
+            row["vehicle_brand_name"],
+            brand_id=row["vehicle_brand_id"]
+        )
         vehicle = Vehicle(
-            row["vehicle_model_id"], row["vehicle_year"], row["vehicle_status"],
+            row["vehicle_model_id"], row["vehicle_year"], 
+            status=row["vehicle_status"],
             vehicle_id=row["vehicle_id"],
-            model_name=row["vehicle_model_name"],
-            brand_id=row["vehicle_brand_id"],
-            brand_name=row["vehicle_brand_name"]
+            vehicle_model=vehicle_model,
+            vehicle_brand=vehicle_brand
         )
         return cls(
-            row["user_id"], row["vehicle_id"], row["status"],
+            row["user_id"], row["vehicle_id"], 
+            status=row["status"],
             rental_id=row["id"],
             rental_date=row["rental_date"],
             user=UserSummary(row["user_id"], row["user_full_name"]),
