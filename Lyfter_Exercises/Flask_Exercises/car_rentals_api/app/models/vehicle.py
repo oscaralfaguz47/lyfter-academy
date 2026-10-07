@@ -1,53 +1,53 @@
 
-from app.models.enums import VehicleStatus
 from app.models.exceptions import ModelValidationError
-from app.utils.validators import clean_int, clean_str
+from app.utils.validators import clean_int
+from app.models.vehicle_model import VehicleModel
+from app.models.brand import Brand
 
 class Vehicle:
     def __init__(
-            self, model_id, year, status, *, 
-            vehicle_id=None, model_name=None, brand_id=None, brand_name=None
+            self, model_id, year, *, 
+            status=None, vehicle_id=None, vehicle_model=None, vehicle_brand=None
         ):
         self.model_id = model_id
         self.year = year
         self.status = status
         self.id = vehicle_id
-        self.model_id = model_id
-        self.model_name = model_name
-        self.brand_id = brand_id
-        self.brand_name = brand_name
+        self.vehicle_model = vehicle_model
+        self.vehicle_brand = vehicle_brand
 
     @classmethod
-    def create_vehicle(cls, *, model_id, year, status):
-        valid_statuses = [s.value for s in VehicleStatus]
+    def create_vehicle(cls, *, model_id, year):
         errors = {}
 
         model_id = clean_int(model_id, "model_id", errors, required=True)
         year = clean_int(year, "year", errors, required=True)
-        status = clean_str(status, "status", errors, required=True)
-        
-        if status.strip() not in valid_statuses:
-            errors["status"] = f"Valid status only: {', '.join(valid_statuses)}"
 
         if errors:
             raise ModelValidationError(errors)
 
         return cls(
             model_id,
-            year,
-            status.strip()
+            year
         )
 
     @classmethod
     def from_row(cls, row):
+        vehicle_model = VehicleModel(
+            row["model_name"], row["brand_id"],
+            model_id=row["model_id"]
+        )
+        vehicle_brand = Brand(
+            row["brand_name"],
+            brand_id=row["brand_id"]
+        )
         return cls(
             row["model_id"],
             row["year"],
-            row["status"],
+            status=row["status"],
             vehicle_id=row["id"],
-            model_name=row["model_name"],
-            brand_id=row["brand_id"],
-            brand_name=row["brand_name"]
+            vehicle_model=vehicle_model,
+            vehicle_brand=vehicle_brand
         )
 
     def to_dict(self):
@@ -55,12 +55,6 @@ class Vehicle:
             "id": self.id,
             "year": self.year,
             "status": self.status,
-            "model": {
-                "id": self.model_id,
-                "name": self.model_name
-            },
-            "brand": {
-                "id": self.brand_id,
-                "name": self.brand_name
-            }
+            "model": self.vehicle_model.to_dict() if self.vehicle_model else self.model_id,
+            "brand": self.vehicle_brand.to_dict() if self.vehicle_brand else (self.vehicle_model.brand_id if self.vehicle_model else None)
         }

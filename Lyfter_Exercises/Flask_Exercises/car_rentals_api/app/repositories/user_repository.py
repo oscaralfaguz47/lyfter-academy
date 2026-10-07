@@ -2,23 +2,24 @@ from app.db import get_connection
 from app.models.user import User
 from psycopg2 import errors as pg_errors
 from app.repositories.exceptions import DuplicateRecordError
+from app.models.enums import RentalStatus
 
 
-COLUMNS = "id, full_name, username, email, birthdate, status, creation_date"
+COLUMNS = "id, full_name, username, email, birthdate, status, creation_date, has_pending_payments"
 
 # Queries
 FIND_ALL = f"""
     SELECT {COLUMNS} FROM users
     WHERE (%(username)s::text IS NULL OR username ILIKE '%%' || %(username)s || '%%')
-    AND (%(full_name)s IS NULL OR full_name = %(full_name)s)
+    AND (%(full_name)s::text IS NULL OR full_name ILIKE '%%' || %(full_name)s || '%%')
     AND (%(email)s::text IS NULL OR email ILIKE '%%' || %(email)s || '%%')
     AND (%(birthdate)s IS NULL OR birthdate = %(birthdate)s)
     AND (%(status)s IS NULL OR status = %(status)s)
     ORDER BY id
 """
 INSERT = f"""
-    INSERT INTO users (full_name, username, email, password, birthdate, status) 
-    VALUES(%(full_name)s, %(username)s, %(email)s, %(password)s, %(birthdate)s, %(status)s)
+    INSERT INTO users (full_name, username, email, password, birthdate) 
+    VALUES(%(full_name)s, %(username)s, %(email)s, %(password)s, %(birthdate)s)
     RETURNING {COLUMNS}
 """
 UPDATE_STATUS = f"""
@@ -26,6 +27,10 @@ UPDATE_STATUS = f"""
 """
 GET_ALL_FOR_BACKUP = """
     SELECT * FROM users
+"""
+
+FIND_BY_ID = f"""
+    SELECT {COLUMNS} FROM users WHERE id = %(user_id)s
 """
 
 class UserRepository:
@@ -50,18 +55,19 @@ class UserRepository:
             )
             return [User.from_row(row) for row in cursor.fetchall()]
 
+    def find_by_id(self, user_id):
+        row = self._fetch_one(FIND_BY_ID, {"user_id": user_id})
+        return User.from_row(row) if row else None
+
     def create(self, user):
-        conn = self._get_conn()
         try:
             row = self._fetch_one(INSERT, self._params(user))
         except pg_errors.UniqueViolation as error:
             raise DuplicateRecordError(str(error)) from error
-        conn.commit()
         return User.from_row(row)
 
     def update_status(self, user_id, status):
         row = self._fetch_one(UPDATE_STATUS, {"id": user_id, "status": status})
-        self._get_conn().commit()
         return User.from_row(row) if row else None # Return the updated user or None if it doesn't exist
 
     def get_all_for_backup(self):
@@ -76,6 +82,5 @@ class UserRepository:
             "username": user.username,
             "email": user.email,
             "password": user.password,
-            "birthdate": user.birthdate,
-            "status": user.status
+            "birthdate": user.birthdate
         }

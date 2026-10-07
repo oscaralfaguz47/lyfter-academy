@@ -1,12 +1,12 @@
 
 
 from http import HTTPStatus
-from werkzeug.exceptions import HTTPException
+from werkzeug.exceptions import HTTPException, MethodNotAllowed
 from app.http.api_response import ApiResponse
 
 
 class APIError(Exception):
-    status_code = HTTPStatus.BAD_REQUEST
+    status_code = HTTPStatus.BAD_REQUEST #400
 
     def __init__(self, message, errors=None):
         super().__init__(message)
@@ -14,7 +14,7 @@ class APIError(Exception):
         self.errors = errors or {}
 
 class ValidationError(APIError):
-    status_code = HTTPStatus.UNPROCESSABLE_ENTITY
+    status_code = HTTPStatus.UNPROCESSABLE_ENTITY #422
 
 class NotFoundError(APIError):
     status_code = HTTPStatus.NOT_FOUND #404
@@ -29,7 +29,10 @@ def register_error_handlers(app):
 
     @app.errorhandler(HTTPException)
     def handle_http_exception(error):
-        return ApiResponse.error(error.message, error.status_code, error.errors)
+        headers = {}
+        if isinstance(error, MethodNotAllowed) and error.valid_methods:
+            headers["Allow"] = ", ".join(error.valid_methods)
+        return ApiResponse.error(error.description, error.code, headers=headers)
 
     @app.errorhandler(Exception)
     def handle_unexpected(error):

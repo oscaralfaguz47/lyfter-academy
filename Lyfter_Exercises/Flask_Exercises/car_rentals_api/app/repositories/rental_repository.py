@@ -1,5 +1,6 @@
 from app.db import get_connection
 from app.models.rental import Rental
+from app.models.enums import RentalStatus
 
 FIND_ALL = """
     SELECT 
@@ -22,6 +23,7 @@ FIND_ALL = """
     INNER JOIN brands b ON b.id = vm.brand_id
     WHERE (%(status)s IS NULL OR r.status = %(status)s)
     AND (%(user_id)s IS NULL OR  r.user_id = %(user_id)s)
+    AND (%(vehicle_id)s IS NULL OR  r.vehicle_id = %(vehicle_id)s)
     ORDER BY r.id
 """
 
@@ -52,10 +54,11 @@ FIND_BY_ID = """
     WHERE r.id = %(rental_id)s
     ORDER BY r.rental_date
 """
-UPDATE_STATUS = """
+UPDATE_RENTAL_STATUS = """
     UPDATE rentals SET status = %(status)s
     WHERE id = %(rental_id)s
-    RETURNING id
+    AND status = 'Active'
+    RETURNING id, vehicle_id
 """
 
 GET_ALL_FOR_BACKUP = """
@@ -71,9 +74,9 @@ class RentalRepository:
             cursor.execute(query, params)
             return cursor.fetchone()
 
-    def find_all(self, status=None, user_id=None):
+    def find_all(self, status=None, user_id=None, vehicle_id=None):
         with self._get_conn().cursor() as cursor:
-            cursor.execute(FIND_ALL, {"status":status, "user_id": user_id})
+            cursor.execute(FIND_ALL, {"status":status, "user_id": user_id, "vehicle_id": vehicle_id})
             return [Rental.from_row(row) for row in cursor.fetchall()]
 
     def find_by_id(self, rental_id):
@@ -81,21 +84,16 @@ class RentalRepository:
         return Rental.from_row(row) if row else None
 
     def create(self, rental):
-        conn = self._get_conn()
         row = self._fetch_one(INSERT, self._params(rental))
-        conn.commit()
         return row["id"]
 
-    def update_status(self, rental_id, status):
-        conn = self._get_conn()
-        row = self._fetch_one(UPDATE_STATUS, {"rental_id": rental_id, "status": status})
-        conn.commit()
-        return self.find_by_id(row["id"])
+    def complete_rental(self, rental_id):
+        row = self._fetch_one(UPDATE_RENTAL_STATUS, {"rental_id": rental_id, "status":"Completed"})
+        return row["vehicle_id"] if row else None
 
-    def get_active_rentals_by_user_id(self, user_id):
-        with self._get_conn().cursor() as cursor:
-            cursor.execute(FIND_ALL, {"user_id": user_id, "status":"Active"})
-            return [Rental.from_row(row) for row in cursor.fetchall()]
+    def cancel_rental(self, rental_id):
+        row = self._fetch_one(UPDATE_RENTAL_STATUS, {"rental_id": rental_id, "status": "Cancelled"})
+        return row["vehicle_id"]if row else None
 
     def get_all_for_backup(self):
         with self._get_conn().cursor() as cursor:
@@ -107,6 +105,6 @@ class RentalRepository:
         return {
             "user_id": rental.user_id,
             "vehicle_id": rental.vehicle_id,
-            "status": rental.status
+            "status": RentalStatus.ACTIVE.value
         }
 

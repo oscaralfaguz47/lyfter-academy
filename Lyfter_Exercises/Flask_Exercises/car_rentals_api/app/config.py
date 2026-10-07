@@ -20,7 +20,7 @@ class Config:
     DB_USER = _required("DB_USER")
     DB_PASSWORD = os.environ.get("DB_PASSWORD")
 
-    MAX_CONTENT_LENGHT = 1 * 1024 * 1024 # 1M 
+    MAX_CONTENT_LENGTH = 1 * 1024 * 1024 # 1M 
 
 class DevelopmentConfig(Config):
     DEBUG = True
