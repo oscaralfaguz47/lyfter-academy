@@ -23,9 +23,11 @@ def create_app(config_class=DevelopmentConfig):
     from app.routes.users import users_bp
     from app.routes.vehicles import vehicles_bp
     from app.routes.rentals import rentals_bp
+    from app.routes.backup import backup_bp
 
     app.register_blueprint(users_bp)
     app.register_blueprint(vehicles_bp)
     app.register_blueprint(rentals_bp)
+    app.register_blueprint(backup_bp)
 
     return app

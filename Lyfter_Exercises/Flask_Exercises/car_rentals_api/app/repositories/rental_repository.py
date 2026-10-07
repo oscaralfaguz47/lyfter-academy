@@ -2,7 +2,7 @@ from app.db import get_connection
 from app.models.rental import Rental
 from app.models.enums import RentalStatus
 
-FIND_ALL = """
+_FIND_ALL = """
     SELECT 
     r.id,
     r.rental_date,
@@ -27,12 +27,12 @@ FIND_ALL = """
     ORDER BY r.id
 """
 
-INSERT = """
+_INSERT = """
     INSERT INTO rentals (user_id, vehicle_id, status)
     VALUES(%(user_id)s, %(vehicle_id)s, %(status)s)
     RETURNING id
 """
-FIND_BY_ID = """
+_FIND_BY_ID = """
     SELECT
     r.id,
     r.rental_date,
@@ -54,18 +54,20 @@ FIND_BY_ID = """
     WHERE r.id = %(rental_id)s
     ORDER BY r.rental_date
 """
-UPDATE_RENTAL_STATUS = """
+_UPDATE_RENTAL_STATUS = """
     UPDATE rentals SET status = %(status)s
     WHERE id = %(rental_id)s
     AND status = 'Active'
     RETURNING id, vehicle_id
 """
 
-GET_ALL_FOR_BACKUP = """
-    SELECT * FROM rentals
+_GET_ALL_FOR_BACKUP = f"""
+    SELECT * FROM rentals ORDER BY id
 """
 
 class RentalRepository:
+    BACKUP_COLUMNS = ("id", "user_id", "vehicle_id", "rental_date", "status")
+
     def __init__(self, get_conn=get_connection):
         self._get_conn = get_conn
 
@@ -76,29 +78,29 @@ class RentalRepository:
 
     def find_all(self, status=None, user_id=None, vehicle_id=None):
         with self._get_conn().cursor() as cursor:
-            cursor.execute(FIND_ALL, {"status":status, "user_id": user_id, "vehicle_id": vehicle_id})
+            cursor.execute(_FIND_ALL, {"status":status, "user_id": user_id, "vehicle_id": vehicle_id})
             return [Rental.from_row(row) for row in cursor.fetchall()]
 
     def find_by_id(self, rental_id):
-        row = self._fetch_one(FIND_BY_ID, {"rental_id": rental_id})
+        row = self._fetch_one(_FIND_BY_ID, {"rental_id": rental_id})
         return Rental.from_row(row) if row else None
 
     def create(self, rental):
-        row = self._fetch_one(INSERT, self._params(rental))
+        row = self._fetch_one(_INSERT, self._params(rental))
         return row["id"]
 
     def complete_rental(self, rental_id):
-        row = self._fetch_one(UPDATE_RENTAL_STATUS, {"rental_id": rental_id, "status":"Completed"})
+        row = self._fetch_one(_UPDATE_RENTAL_STATUS, {"rental_id": rental_id, "status":"Completed"})
         return row["vehicle_id"] if row else None
 
     def cancel_rental(self, rental_id):
-        row = self._fetch_one(UPDATE_RENTAL_STATUS, {"rental_id": rental_id, "status": "Cancelled"})
+        row = self._fetch_one(_UPDATE_RENTAL_STATUS, {"rental_id": rental_id, "status": "Cancelled"})
         return row["vehicle_id"]if row else None
 
     def get_all_for_backup(self):
         with self._get_conn().cursor() as cursor:
-            cursor.execute(GET_ALL_FOR_BACKUP)
-            return [Rental.from_row(row) for row in cursor.fetchall()]
+            cursor.execute(_GET_ALL_FOR_BACKUP)
+            return [dict(row) for row in cursor.fetchall()]
 
     @staticmethod
     def _params(rental):
