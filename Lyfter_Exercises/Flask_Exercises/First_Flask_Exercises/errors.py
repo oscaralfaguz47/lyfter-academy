@@ -1,7 +1,7 @@
 
 from http import HTTPStatus
 from werkzeug.exceptions import HTTPException
-from api_response import ApiResponse
+from First_Flask_Exercises.api_response import ApiResponse
 
 
 class APIError(Exception):

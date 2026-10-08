@@ -1,9 +1,9 @@
 import logging
 logger = logging.getLogger(__name__)
 
-from errors import ValidationError, NotFoundError
-from task_model import Task, TaskValidationError
-from storage_service import save_data_to_json, get_record_by_id, update_record_in_json, delete_record_from_json, get_data_from_json
+from First_Flask_Exercises.errors import ValidationError, NotFoundError
+from First_Flask_Exercises.task_model import Task, TaskValidationError
+from First_Flask_Exercises.storage_service import save_data_to_json, get_record_by_id, update_record_in_json, delete_record_from_json, get_data_from_json
 
 def create_task(task_data):
     if not isinstance(task_data, dict):
