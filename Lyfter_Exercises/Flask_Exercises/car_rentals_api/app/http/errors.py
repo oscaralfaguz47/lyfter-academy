@@ -24,7 +24,6 @@ class ConflictError(APIError):
 
 class BackupError(APIError):
     status_code = HTTPStatus.INTERNAL_SERVER_ERROR
-    title = "Backup Failed"
 
 class ServiceUnavailableError(APIError):
     status_code = HTTPStatus.SERVICE_UNAVAILABLE

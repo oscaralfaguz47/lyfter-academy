@@ -1,5 +1,8 @@
 from datetime import date
 
+from app.repositories.exceptions import BackupWriteError
+from app.http.errors import BackupError
+
 class BackupService:
     def __init__(self, 
             repository,
@@ -27,10 +30,13 @@ class BackupService:
         ]
 
         backed_up_files = []
-        for name, source_repository in sources:
-            records = source_repository.get_all_for_backup()
-            file_path = self._repository.save_data_to_csv(records, f"{name}_backup_{today}", source_repository.BACKUP_COLUMNS)
-            backed_up_files.append(file_path.name)
+        try:
+            for name, source_repository in sources:
+                records = source_repository.get_all_for_backup()
+                file_path = self._repository.save_data_to_csv(records, f"{name}_backup_{today}", source_repository.BACKUP_COLUMNS)
+                backed_up_files.append(file_path.name)
+        except BackupWriteError as error:
+            raise BackupError("Could not write the backup files.") from error
         return backed_up_files
         
     

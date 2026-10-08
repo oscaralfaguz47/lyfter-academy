@@ -1,9 +1,9 @@
+from datetime import time
 import random
 
 from faker import Faker
 from psycopg2.extras import RealDictCursor, execute_values
 
-SCHEMA = "lyfter_car_rental"
 NUM_USERS = 200
 NUM_VEHICLES = 100
 NUM_RENTALS = 150
@@ -16,8 +16,8 @@ def build_fake_users(count):
     return[
         (
             fake.name(),
-            fake.unique.user_name().lower(),
-            fake.unique.email().lower(),
+            f"{fake.unique.user_name().lower()}{random.randint(100, 999999)}",
+            f"{fake.unique.email().lower()}{random.randint(100, 999999)}",
             fake.password(),
             fake.date_of_birth(minimum_age=18, maximum_age=75)
         )
@@ -45,7 +45,7 @@ def build_fake_rentals(count, user_ids, vehicle_ids):
     
 # ---- GET EXISTING MODELS ----
 def get_vehicle_models_ids(cursor):
-    cursor.execute(f"SELECT id FROM {SCHEMA}.vehicle_models")
+    cursor.execute(f"SELECT id FROM vehicle_models")
     model_ids = [row["id"] for row in cursor.fetchall()]
     if not model_ids:
         raise RuntimeError("Seed vehicle_models before creating vehicles.")
@@ -56,7 +56,7 @@ def get_vehicle_models_ids(cursor):
 # Inserts the users and returns the ids
 def insert_users(cursor, users):
     query = f"""
-        INSERT INTO {SCHEMA}.users (full_name, username, email, password, birthdate)
+        INSERT INTO users (full_name, username, email, password, birthdate)
         VALUES %s
         RETURNING id
     """
@@ -65,7 +65,7 @@ def insert_users(cursor, users):
 # Inserts the vehicles and returns the ids
 def insert_vehicles(cursor, vehicles):
     query = f"""
-        INSERT INTO {SCHEMA}.vehicles (model_id, year, status)
+        INSERT INTO vehicles (model_id, year, status)
         VALUES %s
         RETURNING id
     """
@@ -75,7 +75,7 @@ def insert_vehicles(cursor, vehicles):
 # Inserts the rentals and returns the ids
 def insert_rentals(cursor, rentals):
     query = f"""
-        INSERT INTO {SCHEMA}.rentals (user_id, vehicle_id, status)
+        INSERT INTO rentals (user_id, vehicle_id, status)
         VALUES %s
         RETURNING id
     """

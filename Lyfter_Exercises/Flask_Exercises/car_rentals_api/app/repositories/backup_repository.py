@@ -1,6 +1,6 @@
 import csv
 from pathlib import Path
-from app.http.errors import BackupError
+from app.repositories.exceptions import BackupWriteError
 
 
 BASE_DIR = Path(__file__).resolve().parents[2] # /car_rentals_api
@@ -17,7 +17,7 @@ class BackupRepository:
                 writer.writeheader()
                 writer.writerows(records)
         except (OSError, csv.Error) as error:
-            raise BackupError(f"Could not write backup file '{file_path}'") from error
+            raise BackupWriteError(f"Could not write backup file '{file_path}'") from error
         return file_path
             
 
