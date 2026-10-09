@@ -3,6 +3,7 @@ from flask import Flask
 from app.config import get_config
 from app.routes.health import health_bp
 from app.database import init_db
+from app.errors.handlers import register_error_handlers
 
 REQUIRED_SETTINGS = ("SECRET_KEY", "DATABASE_URL")
 
@@ -17,7 +18,10 @@ def create_app(config_name: str | None = None) -> Flask:
 
     app.json.sort_keys = False # It keeps our key order in JSON response
 
-    init_db(app) # After validate the config, the engine is created and the session factory and registers the session close at the end of every request.
+    # After validate the config, the engine is created and the session factory and registers the session close at the end of every request.
+    init_db(app) 
+    # Here we register the handlers that turn every error raised in the API into a "JSON response"
+    register_error_handlers(app)
 
     # Declaring the API routes
     app.register_blueprint(health_bp)
