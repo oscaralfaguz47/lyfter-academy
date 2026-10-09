@@ -1,18 +1,20 @@
 from app.db import get_connection
 from app.models.vehicle import Vehicle
 
-_FIND_ALL = """
-    SELECT v.id, 
-    v.year, 
-    v.status, 
-    vm.id AS model_id, 
+FIND_ALL = """
+    SELECT v.id,
+    v.year,
+    v.status,
+    vm.id AS model_id,
     vm.name AS model_name,
     b.id AS brand_id,
-    b.name AS brand_name 
-    FROM vehicles v 
+    b.name AS brand_name
+    FROM vehicles v
     INNER JOIN vehicle_models vm ON v.model_id = vm.id
     INNER JOIN brands b ON vm.brand_id = b.id
     WHERE (%(model_id)s IS NULL OR v.model_id = %(model_id)s)
+    AND (%(year)s IS NULL OR v.year = %(year)s)
+    AND (%(status)s IS NULL OR v.status = %(status)s)
     ORDER BY v.id
 """
 _INSERT = """
@@ -58,9 +60,9 @@ class VehicleRepository:
             cursor.execute(query, params)
             return cursor.fetchone()
             
-    def fetch_all(self, model_id=None):
+    def fetch_all(self, model_id=None, year=None, status=None):
         with self._get_conn().cursor() as cursor:
-            cursor.execute(_FIND_ALL, {"model_id": model_id})
+            cursor.execute(FIND_ALL, {"model_id": model_id, "year": year, "status": status})
             return [Vehicle.from_row(row) for row in cursor.fetchall()]
 
     def get_by_id(self, vehicle_id):
@@ -78,6 +80,10 @@ class VehicleRepository:
     def mark_as_available(self, vehicle_id):
         row = self._fetch_one(_UPDATE_STATUS, {"vehicle_id": vehicle_id, "status_for_update": "Available", "current_status": "Rented"})
         return row["id"] if row else None 
+    
+    def update_status(self, vehicle_id, new_status, current_status):
+        row = self._fetch_one(_UPDATE_STATUS, {"vehicle_id": vehicle_id, "status_for_update": new_status, "current_status": current_status})
+        return row["id"] if row else None
 
     def get_all_for_backup(self):
         with self._get_conn().cursor() as cursor:
