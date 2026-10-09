@@ -12,6 +12,11 @@ source .venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -r requirements-dev.txt
 ```
+4. Run the API
+```
+flask run --debug
+```
+
 
 ## Project structure
 
@@ -41,4 +46,27 @@ python -m pip install -r requirements-dev.txt
 ├── .env / .env.example / .flaskenv / .gitignore
 ├── README.md
 └── requirements.txt / requirements-dev.txt
+```
+
+## Understanding an API request flow 
+
+```
+# Starting the app (runs once) #
+create_app() -> init_db(app)
+   ├─ engine: creates the connection pool (does not connect to the DB yet)
+   ├─ sessions factory: ready to create sessions on demand (none created yet)
+   └─ registers _close_session to run at the end of every request
+
+# Every Request #
+GET /health (example of and endpoint)
+   1- route calls get_session()
+        - Is there a session in g? No -> the factory creates one -> it is saved int g
+        - A second call in the same request reuses the same session
+   2- session.execute("SELECT 1")
+        - The session asks the pool for a connection -> pre-ping -> Postgres responds
+   3- The route returns the response (200 or 503)
+   4- Flask calls _close_session() -> ALWAYS, even if step 2 or 3 failed
+        - g.pop -> session.close() 
+            -> rolls back anything not committed
+            -> returns the connection to the pool (it is not closed)
 ```

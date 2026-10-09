@@ -6,7 +6,9 @@ load_dotenv()
 
 class Config:
     # Setting shared by every environment
+    SECRET_KEY = os.environ.get("SECRET_KEY")
     DATABASE_URL = os.environ.get("DATABASE_URL")
+    DB_SCHEMA = os.environ.get("DB_SCHEMA") # Optional
     MAX_CONTENT_LENGTH = 1 * 1024 * 1024 # 1 MB, bigger bodies get 413
 
 
