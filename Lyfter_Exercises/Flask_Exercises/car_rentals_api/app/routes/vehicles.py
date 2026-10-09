@@ -12,15 +12,16 @@ vehicles_bp = Blueprint("vehicles", __name__, url_prefix="/vehicles")
 def _service(): 
     return VehicleService(VehicleRepository(), VehicleModelRepository())
 
-# List of vehicles filtering by model_id
 @vehicles_bp.get("")
 def list_vehicles_handler():
-    params = QueryParams(allowed={"model_id"})
+    params = QueryParams(allowed={"model_id", "year", "status"})
     model_id = params.get_int("model_id")
+    year = params.get_int("year")
+    status = params.get_str("status")
     params.raise_if_errors()
-    vehicles_list = _service().list_vehicles(model_id)
+    vehicles_list = _service().list_vehicles(model_id=model_id, year=year, status=status)
     return ApiResponse.success(
-            "Vehicles retrieved successfully", 
+            "Vehicles retrieved successfully",
             [vehicle.to_dict() for vehicle in vehicles_list]
         )
 
@@ -29,3 +30,7 @@ def create_vehicle_handler():
     vehicle = _service().create_vehicle(get_json_body())
     return ApiResponse.success("Vehicle created successfully.", vehicle.to_dict(), status=HTTPStatus.CREATED)
 
+@vehicles_bp.patch("/<int:vehicle_id>/status")
+def update_vehicle_status_handler(vehicle_id):
+    vehicle = _service().update_status(vehicle_id, get_json_body())
+    return ApiResponse.success("Vehicle status updated successfully.", vehicle.to_dict())

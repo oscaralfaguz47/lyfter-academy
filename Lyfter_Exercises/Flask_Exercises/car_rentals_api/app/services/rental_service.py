@@ -31,7 +31,11 @@ class RentalService:
             # Validate if the user exists
             user = self._user_repository.find_by_id(rental.user_id)
             if user is None:
-                raise ValidationError(f"Rental data is invalid.", {"user_id": f"User {rental.user_id} does not exist."})
+                raise ValidationError("Rental data is invalid.", {"user_id": f"User {rental.user_id} does not exist."})
+            if not user.status:
+                raise ConflictError(f"User {rental.user_id} is deactivated and cannot rent vehicles.")
+            if user.has_pending_payments:
+                raise ConflictError(f"User {rental.user_id} has pending payments and cannot rent vehicles.")
 
             # Update the status of the vehicle to Rented
             # Since here we are updating the vehicle, the database blocks it in this transaction to avoid other users making updates
