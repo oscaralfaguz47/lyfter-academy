@@ -2,7 +2,7 @@
 
 from http import HTTPStatus
 
-from flask import Flask, Response, jsonify, request
+from flask import Flask, Response, g, jsonify, request
 from werkzeug.exceptions import HTTPException
 
 from app.errors.exceptions import ConflictError, DomainError, NotFoundError, ValidationError
@@ -58,8 +58,9 @@ def problem(status: HTTPStatus, detail: str | None = None, errors: dict | None =
         "type": "about:blank",
         "title": status.phrase,   # It gives the standard name, ex: "Not Found"
         "status": status.value,   # 404
-        "details": detail,
+        "detail": detail,
         "instance": request.path, # The route of the current request
+        "request_id": g.get("request_id"),
     }
     if errors:
         body["errors"] = errors

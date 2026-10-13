@@ -4,6 +4,8 @@ from app.config import get_config
 from app.routes.health import health_bp
 from app.database import init_db
 from app.errors.handlers import register_error_handlers
+from app.hooks import register_hooks
+from app.logging_config import configure_logging
 
 REQUIRED_SETTINGS = ("SECRET_KEY", "DATABASE_URL")
 
@@ -16,10 +18,15 @@ def create_app(config_name: str | None = None) -> Flask:
     app.config.from_object(get_config(config_name))
     _validate_config(app)
 
+    # Setup logging before anything logs
+    configure_logging(app.config["LOG_LEVEL"]) 
+
     app.json.sort_keys = False # It keeps our key order in JSON response
 
     # After validate the config, the engine is created and the session factory and registers the session close at the end of every request.
     init_db(app) 
+    # request ID, timing and headers on every request
+    register_hooks(app)
     # Here we register the handlers that turn every error raised in the API into a "JSON response"
     register_error_handlers(app)
 
