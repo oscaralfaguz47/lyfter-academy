@@ -1,5 +1,5 @@
 from flask import Flask, current_app, g
-from sqlalchemy import MetaData, create_engine
+from sqlalchemy import Engine, MetaData, create_engine
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 
@@ -17,20 +17,25 @@ class Base(DeclarativeBase):
 
     metadata = MetaData(naming_convention=NAMING_CONVENTION)
 
-def init_db(app: Flask) -> None:
-    """ Creates the engine ans session factory and close sessions after each request. """
-    connect_args = {} # An extra dict options that we pass to the driver (psycopg), every time a connection is open it starts empty.
-    schema = app.config.get("DB_SCHEMA")
+def create_db_engine(database_url: str, schema: str | None = None) -> Engine:
+    """ Build the engine. Shared by the app and by Alembic, both connect the same way. """
+    connect_args = {}
     if schema:
         connect_args["options"] = f"-c search_path={schema}" # search_path tells to Postgres "search the tables first in this schema"
 
     # create_engine is lazy, it still is not connected to Postgres, the first real connection happens when a user executes a request
     # create_engine creates a pool that by default saves up 5 open and reusable connections.
-    engine = create_engine(  
-        app.config["DATABASE_URL"],
+    return create_engine(  
+        database_url,
         pool_pre_ping=True, # Before using a pool connection, it verifies that it's alive, this avoids errors when Postgres resets
         connect_args=connect_args,
     )
+
+
+def init_db(app: Flask) -> None:
+    """ Creates the engine ans session factory and close sessions after each request. """
+   
+    engine = create_db_engine(app.config["DATABASE_URL"], app.config.get("DB_SCHEMA"))
     # With app.extensions we save the engine in the app, this helps the tests to create their own app with their own base without crashes
     app.extensions["db_engine"] = engine
 

@@ -16,7 +16,20 @@ python -m pip install -r requirements-dev.txt
 ```
 flask run --debug
 ```
+5. Set up Alembic, from the project root, run the following:
+```
+alembic init db/migrations
+```
 
+## Commands while programming
+1. Generate migrations
+```
+alembic revision --autogenerate -m "create users table"
+```
+2. Apply the generated migration in the DB
+```
+alembic upgrade head
+```
 
 ## Project structure
 
