@@ -10,3 +10,7 @@ psycopg[binary]==3.3.5
 
 # Load variables from .env into the environment
 python-dotenv==1.2.3
+
+# Input validation and serialization (DTOs)
+pydantic==2.14.1
+email-validator==2.3.0
