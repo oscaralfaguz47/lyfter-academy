@@ -1,8 +1,10 @@
 from flask import Flask
 
-from app.config import get_config
 from app.routes.health import health_bp
 from app.routes.users import users_bp
+from app.routes.addresses import addresses_bp
+
+from app.config import get_config
 from app.database import init_db
 from app.errors.handlers import register_error_handlers
 from app.hooks import register_hooks
@@ -34,6 +36,8 @@ def create_app(config_name: str | None = None) -> Flask:
     # Declaring the API routes
     app.register_blueprint(health_bp)
     app.register_blueprint(users_bp)
+    app.register_blueprint(addresses_bp)
+
     return app
 
 def _validate_config(app: Flask) -> None:
