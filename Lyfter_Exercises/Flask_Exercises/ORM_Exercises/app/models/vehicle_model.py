@@ -4,6 +4,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from app.models.brand import Brand
+    from app.models.vehicle import Vehicle
 
 from app.database import Base
 
@@ -18,3 +19,6 @@ class VehicleModel(Base):
 
     # Relationship with brands
     brand: Mapped["Brand"] = relationship(back_populates="vehicle_models")
+
+    # Relationship with vehicles
+    vehicles: Mapped[list["Vehicle"]] = relationship(back_populates="vehicle_model", passive_deletes="all")

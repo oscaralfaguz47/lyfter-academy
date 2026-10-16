@@ -18,7 +18,7 @@ class Vehicle(TimesTampMixin, Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     year: Mapped[int] = mapped_column(SmallInteger)
-    status: Mapped[str] = mapped_column(
+    status: Mapped[VehicleStatus] = mapped_column(
         Enum(
             VehicleStatus,
             name="status",
@@ -38,4 +38,4 @@ class Vehicle(TimesTampMixin, Base):
 
     #Relationships
     vehicle_model: Mapped["VehicleModel"] = relationship(back_populates="vehicles")
-    user: Mapped["User"] = relationship(back_populates="users")
+    user: Mapped["User | None"] = relationship(back_populates="vehicles")

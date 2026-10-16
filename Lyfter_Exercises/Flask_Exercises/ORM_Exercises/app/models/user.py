@@ -8,6 +8,7 @@ from app.models.mixins import TimesTampMixin
 
 if TYPE_CHECKING:
     from app.models.address import Address
+    from app.models.vehicle import Vehicle
 
 
 class User(TimesTampMixin, Base):
@@ -19,6 +20,8 @@ class User(TimesTampMixin, Base):
 
     # One user many addresses
     addresses: Mapped[list["Address"]] = relationship(back_populates="user", passive_deletes="all")
+
+    vehicles: Mapped[list["Vehicle"]] = relationship(back_populates="user", passive_deletes="all")
 
     # This method control how the object looks when printed or logged, ex: User(id=1, email='oscar.alfaro@gmail.com') instead of <User object at...>
     def __repr__(self) -> str:
