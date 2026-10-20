@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.errors.exceptions import ConflictError
 from app.models import User
 
+USER_REFERENCING_CONSTRAINTS = {"fk_addresses_user_id_users", "fk_vehicles_user_id_users"}
 
 class UserRepository:
     # The session is injected and the repository never calls get_session()
@@ -39,7 +40,12 @@ class UserRepository:
 
     def delete(self, user: User) -> None:
         self._session.delete(user)
-        self._session.flush()
+        try:
+            self._session.flush()
+        except IntegrityError as error:
+            if _violated_constraint(error) in USER_REFERENCING_CONSTRAINTS:
+                raise ConflictError(f"User {user.id} still has addresses or vehicles assigned.") from error
+            raise
 
     def _flush(self, user: User) -> None:
         try:

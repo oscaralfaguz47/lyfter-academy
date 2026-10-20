@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, Af
 
 
 # Reusable type, a valid email and lowercased
-NormalizedEmail: TypeAlias = Annotated[EmailStr, AfterValidator(str.lower), Field(max_length=180)]
+NormalizedEmail: TypeAlias = Annotated[EmailStr, AfterValidator(str.lower), Field(max_length=120)]
 UserName: TypeAlias = Annotated[str, Field(min_length=1, max_length=100)]
 
 class UserCreate(BaseModel):
@@ -16,15 +16,10 @@ class UserCreate(BaseModel):
     # extra="forbid": unknown fields are rejected
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
-    name: str = UserName
+    name: UserName
     # EmailStr validates the email format
-    email: EmailStr = NormalizedEmail
+    email: NormalizedEmail
 
-    # Pydantic call the normalize_email method automatically through the @field_validator decorator
-    @field_validator("email")
-    @classmethod
-    def normalize_email(cls, value: str) -> str:
-        return value.lower()
 
 class UserUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)

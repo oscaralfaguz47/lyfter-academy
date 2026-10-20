@@ -26,4 +26,4 @@ class Address(TimesTampMixin, Base):
 
 
     def __repr__(self):
-        return f"Address(id={self.id!r}, user_id={self.user_id!r}"
+        return f"Address(id={self.id!r}, user_id={self.user_id!r})"

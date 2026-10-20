@@ -3,7 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from typing import Annotated, TypeAlias, Self
 
-EntityId: TypeAlias = Annotated[int, Field(gt=0, string=True)]
+EntityId: TypeAlias = Annotated[int, Field(gt=0)]
 AddressLine: TypeAlias = Annotated[str, Field(min_length=1, max_length=200)]
 City: TypeAlias = Annotated[str, Field(min_length=1, max_length=40)]
 State: TypeAlias = Annotated[str, Field(min_length=1,max_length=50)]
@@ -15,17 +15,15 @@ class InputSchema(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
 class AddressCreate(InputSchema):
-    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
     line1: AddressLine
-    line2: AddressLine | None # Optional
+    line2: AddressLine | None = None # Optional
     city: City
     state: State
     zip_code: ZipCode
     user_id: EntityId
 
 class AddressUpdate(InputSchema):
-    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
     line1: AddressLine | None = None 
     line2: AddressLine | None = None # Optional
@@ -55,5 +53,6 @@ class AddressRead(BaseModel):
     city: str
     state: str
     zip_code: str
+    user_id: int
     created_at: datetime
     updated_at: datetime

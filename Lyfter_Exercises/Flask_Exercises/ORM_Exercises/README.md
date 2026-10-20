@@ -20,6 +20,10 @@ flask run --debug
 ```
 alembic init db/migrations
 ```
+6. Verify if all tables exist
+```
+python -m db.init_db
+```
 
 ## Commands while programming
 1. Generate migrations

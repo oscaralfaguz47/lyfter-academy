@@ -18,7 +18,7 @@ def serialize_many(schema: type[BaseModel], objs: Iterable[Any]) -> list[dict[st
     return [serialize(schema, obj) for obj in objs]
 
 
-def ok(data: Any, meta: dict[str, Any] | None, headers: dict[str, str] | None = None) -> ResponseTuple:
+def ok(data: Any, meta: dict[str, Any] | None  = None, headers: dict[str, str] | None = None) -> ResponseTuple:
     """ 200 OK with a body, plus optional metadata (pagination) """
     body: dict[str, Any] = {"data": data}
     if meta is not None: 
