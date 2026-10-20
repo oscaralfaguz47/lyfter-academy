@@ -1,10 +1,13 @@
 import os
 import sys
 from pathlib import Path
+import argparse
 
 from dotenv import load_dotenv
 from psycopg2 import sql
 import psycopg2
+
+from seeds.fake_data import seed_fake_data
 
 
 # Paths and configuration
@@ -80,11 +83,18 @@ def run_seeds(conn):
 
 # Entry point, one connection and three steps
 def main():
+    parser = argparse.ArgumentParser(description="Set up the database.")
+    parser.add_argument("--fake", action="store_true", help="Also insert fake data.")
+    args = parser.parse_args()
+
     conn = psycopg2.connect(**CONNECTION_PARAMS)
     try:
         prepare_schema(conn)
         run_migrations(conn)
         run_seeds(conn)
+        if args.fake:
+            summary = seed_fake_data(conn)
+            print(f"Inserted fake data: {summary}")
     except Exception:
         conn.rollback()
         raise

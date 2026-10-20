@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from flask import Blueprint, request
+from flask import Blueprint
 
 from app.services.user_service import UserService
 from app.repositories.user_repository import UserRepository

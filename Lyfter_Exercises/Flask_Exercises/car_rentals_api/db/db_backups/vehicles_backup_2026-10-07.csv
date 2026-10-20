@@ -1,0 +1,13 @@
+id,model_id,year,status
+1,2,2023,Available
+2,3,2022,Rented
+3,5,2021,Rented
+4,8,2020,Available
+5,10,2024,Rented
+6,12,2023,Available
+7,13,2022,Maintenance
+8,16,2021,Available
+9,19,2024,Rented
+10,25,2023,Available
+11,25,2027,Available
+12,1,2024,Available

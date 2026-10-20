@@ -22,6 +22,13 @@ class NotFoundError(APIError):
 class ConflictError(APIError):
     status_code = HTTPStatus.CONFLICT #409
 
+class BackupError(APIError):
+    status_code = HTTPStatus.INTERNAL_SERVER_ERROR
+
+class ServiceUnavailableError(APIError):
+    status_code = HTTPStatus.SERVICE_UNAVAILABLE
+    title = "Service Unavailable"
+
 def register_error_handlers(app):
     @app.errorhandler(APIError)
     def handle_api_error(error):
