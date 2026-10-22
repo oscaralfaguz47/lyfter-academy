@@ -2,10 +2,10 @@ from collections.abc import Sequence
 
 from sqlalchemy import select, func, Select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload, joinedload
 
 from app.errors.exceptions import ConflictError
-from app.models import User, Vehicle
+from app.models import User, Vehicle, VehicleModel
 
 from app.schemas.user import UserListParams
 
@@ -26,6 +26,15 @@ class UserRepository:
 
     def get_by_email(self, email: str) -> User | None:
         return self._session.scalar(select(User).where(User.email == email))
+
+    def get_with_vehicles_and_addresses(self, user_id: int) -> User | None:
+        return self._session.get(
+            User, user_id, options=[
+                    selectinload(User.addresses),
+                    selectinload(User.vehicles).joinedload(Vehicle.vehicle_model).joinedload(VehicleModel.brand),
+                ],
+            )
+
 
     def count(self, params: UserListParams) -> int:
         query = self._filtered(params).with_only_columns(func.count(User.id))
