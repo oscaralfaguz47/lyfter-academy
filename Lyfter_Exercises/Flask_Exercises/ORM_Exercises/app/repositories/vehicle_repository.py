@@ -4,26 +4,28 @@ from sqlalchemy.exc import IntegrityError
 
 from collections.abc import Sequence
 
-from app.models.vehicle import Vehicle
-from app.models.vehicle_model import VehicleModel
+from app.models import Vehicle, VehicleModel
 from app.errors.exceptions import NotFoundError
+from app.schemas.vehicle import VehicleListParams
+
+SORT_COLUMNS = {"id": Vehicle.id, "year": Vehicle.year}
 
 class VehicleRepository:
     def __init__(self, session: Session) -> None:
         self._session = session
 
-    def list(self, offset: int, limit: int) -> Sequence[Vehicle]:
+    def list(self, params: VehicleListParams) -> Sequence[Vehicle]:
         query = (
-            self._with_model_and_brand()
+            self._filtered(params)
             .options(contains_eager(Vehicle.vehicle_model).contains_eager(VehicleModel.brand))
-            .order_by(Vehicle.id)
-            .offset(offset)
-            .limit(limit)
+            .order_by(*_sort_clauses(params.sort))
+            .offset(params.offset)
+            .limit(params.per_page)
         )
         return self._session.scalars(query).all()
 
-    def count(self) -> int:
-        query = self._with_model_and_brand().with_only_columns(func.count(Vehicle.id))
+    def count(self, params: VehicleListParams) -> int:
+        query = self._filtered(params).with_only_columns(func.count(Vehicle.id))
         return self._session.scalar(query) or 0
 
     def add(self, vehicle: Vehicle) -> Vehicle:
@@ -32,7 +34,12 @@ class VehicleRepository:
         return vehicle
 
     def get_by_id(self, vehicle_id: int) -> Vehicle | None:
-        return self._session.get(Vehicle, vehicle_id)
+        query = (
+            self._with_model_and_brand()
+            .options(contains_eager(Vehicle.vehicle_model).contains_eager(VehicleModel.brand))
+            .where(Vehicle.id == vehicle_id)
+        )
+        return self._session.scalar(query)
 
     def save(self, vehicle: Vehicle) -> Vehicle:
         self._flush()
@@ -42,11 +49,31 @@ class VehicleRepository:
         self._session.delete(vehicle)
         self._session.flush()
 
-    # The joins shared by list() and count(), so the filter applies to both
+
+    def _filtered(self, params: VehicleListParams) -> Select:
+        """ The join + every filter. """
+
+        query = self._with_model_and_brand()
+        if params.brand_id is not None:
+            query = query.where(VehicleModel.brand_id == params.brand_id)
+        if params.model_id is not None:
+            query = query.where(Vehicle.model_id == params.model_id)
+        if params.year_min is not None:
+            query = query.where(Vehicle.year >= params.year_min)
+        if params.year_max is not None:
+            query = query.where(Vehicle.year <= params.year_max)
+        if params.has_owner is not None:
+            owner = Vehicle.user_id
+            query = query.where(owner.is_not(None) if params.has_owner else owner.is_(None))
+        return query
+
+
+        # The joins shared by list() and count(), so the filter applies to both
     @staticmethod
     def _with_model_and_brand() -> Select:
         return select(Vehicle).join(Vehicle.vehicle_model).join(VehicleModel.brand)
 
+    
     def _flush(self) -> None:
         try:
             self._session.flush()
@@ -58,7 +85,11 @@ class VehicleRepository:
                 raise NotFoundError("User not found.") from error
             raise
 
-
 def _violated_constraint(error: IntegrityError) -> str | None:
     diagnostics = getattr(error.orig, "diag", None)
     return getattr(diagnostics, "constraint_name", None)
+
+def _sort_clauses(sort: str) -> tuple:
+    # When '-year' it means DESC
+    column = SORT_COLUMNS[sort.lstrip("-")]
+    return (column.desc() if sort.startswith("-") else column.asc(), Vehicle.id)

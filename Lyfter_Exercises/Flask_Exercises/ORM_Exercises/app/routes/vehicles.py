@@ -6,9 +6,8 @@ from app.services.vehicle_service import VehicleService
 from app.repositories.vehicle_repository import VehicleRepository
 from app.repositories.user_repository import UserRepository
 from app.repositories.vehicle_model_repository import VehicleModelRepository
-from app.schemas.pagination import PaginationParams
 from app.schemas.validation import parse
-from app.schemas.vehicle import VehicleRead, VehicleCreate, VehicleUpdate, VehicleOwnerAssign
+from app.schemas.vehicle import VehicleRead, VehicleCreate, VehicleUpdate, VehicleOwnerAssign, VehicleListParams
 from app.routes.responses import pagination_meta, ok, serialize_many, created, serialize, no_content
 
 
@@ -21,9 +20,9 @@ def _vehicle_service() -> VehicleService:
 
 @vehicles_bp.get("")
 def list_vehicles():
-    pagination = parse(PaginationParams, request.args.to_dict(), "Invalid query params")
-    vehicles, total = _vehicle_service().list_vehicles(pagination)
-    meta = pagination_meta(pagination.page, pagination.per_page, total)
+    params = parse(VehicleListParams, request.args.to_dict(), "Invalid query params")
+    vehicles, total = _vehicle_service().list_vehicles(params)
+    meta = pagination_meta(params.page, params.per_page, total)
     return ok(serialize_many(VehicleRead, vehicles), meta)
 
 @vehicles_bp.get("/<int:vehicle_id>")

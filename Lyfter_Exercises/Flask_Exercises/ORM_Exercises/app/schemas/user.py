@@ -1,10 +1,11 @@
 """ Shapes the user data that enters and leaves the API """
 
 from datetime import datetime
-from typing import Annotated, TypeAlias
+from typing import Annotated, TypeAlias, Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, AfterValidator, model_validator
 
+from app.schemas.pagination import PaginationParams
 
 # Reusable type, a valid email and lowercased
 NormalizedEmail: TypeAlias = Annotated[EmailStr, AfterValidator(str.lower), Field(max_length=120)]
@@ -51,3 +52,9 @@ class UserRead(BaseModel):
     email: str
     created_at: datetime
     updated_at: datetime
+
+
+UserSort = Literal["id", "-id", "name", "-name"]
+class UserListParams(PaginationParams):
+    min_vehicles: int | None = Field(default=None, ge=1)
+    sort: UserSort = "id"
