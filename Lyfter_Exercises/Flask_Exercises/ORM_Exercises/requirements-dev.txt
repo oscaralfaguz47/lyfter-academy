@@ -1,0 +1,5 @@
+# Include everything the app needs to run
+-r requirements.txt
+
+# Testing
+pytest==9.1.1

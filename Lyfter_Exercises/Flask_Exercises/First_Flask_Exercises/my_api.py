@@ -1,8 +1,8 @@
 from http import HTTPStatus
 from flask import Flask, request
-from api_response import ApiResponse
-from task_service import create_task, update_task, get_task, delete_task, get_tasks
-from errors import register_error_handlers
+from First_Flask_Exercises.api_response import ApiResponse
+from First_Flask_Exercises.task_service import create_task, update_task, get_task, delete_task, get_tasks
+from First_Flask_Exercises.errors import register_error_handlers
 import logging
 
 logging.basicConfig(
