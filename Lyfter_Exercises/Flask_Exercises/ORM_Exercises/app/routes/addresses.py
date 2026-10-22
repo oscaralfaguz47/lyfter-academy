@@ -5,8 +5,7 @@ from app.database import get_session
 from app.repositories.address_repository import AddressRepository
 from app.repositories.user_repository import UserRepository
 from app.schemas.validation import parse
-from app.schemas.pagination import PaginationParams
-from app.schemas.address import AddressRead, AddressCreate, AddressUpdate
+from app.schemas.address import AddressRead, AddressCreate, AddressUpdate, AddressListParams
 from app.routes.responses import pagination_meta, serialize_many, serialize
 from app.routes.responses import ok, created, no_content
 
@@ -20,9 +19,9 @@ def _address_service() -> AddressService:
 
 @addresses_bp.get("")
 def list_addresses():
-    pagination = parse(PaginationParams, request.args.to_dict(), "Invalid query params.")
-    addresses, total = _address_service().list_addresses(pagination)
-    meta = pagination_meta(pagination.page, pagination.per_page, total)
+    params = parse(AddressListParams, request.args.to_dict(), "Invalid query params.")
+    addresses, total = _address_service().list_addresses(params)
+    meta = pagination_meta(params.page, params.per_page, total)
     return ok(serialize_many(AddressRead, addresses), meta=meta)
 
 @addresses_bp.get("/<int:address_id>")
