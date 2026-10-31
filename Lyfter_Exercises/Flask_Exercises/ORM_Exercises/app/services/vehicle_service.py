@@ -6,8 +6,7 @@ import logging
 from app.repositories.vehicle_repository import VehicleRepository
 from app.repositories.user_repository import UserRepository
 from app.repositories.vehicle_model_repository import VehicleModelRepository
-from app.schemas.pagination import PaginationParams
-from app.schemas.vehicle import VehicleCreate, VehicleUpdate
+from app.schemas.vehicle import VehicleCreate, VehicleUpdate, VehicleListParams
 from app.models.vehicle import Vehicle
 from app.errors.exceptions import NotFoundError, ValidationError, ConflictError
 
@@ -20,9 +19,9 @@ class VehicleService:
         self._user_repository = user_repository
         self._model_repository = model_repository
 
-    def list_vehicles(self, pagination: PaginationParams) -> tuple[Sequence[Vehicle], int]:
-        vehicles = self._repository.list(offset=pagination.offset, limit=pagination.per_page)
-        return vehicles, self._repository.count()
+    def list_vehicles(self, params: VehicleListParams) -> tuple[Sequence[Vehicle], int]:
+        vehicles = self._repository.list(params)
+        return vehicles, self._repository.count(params)
 
     def create_vehicle(self, data: VehicleCreate) -> Vehicle:
         if self._model_repository.get_by_id(data.model_id) is None:
