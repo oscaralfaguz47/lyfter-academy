@@ -1,14 +1,15 @@
 from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
-from typing import Annotated, TypeAlias, Self
+from typing import Annotated, TypeAlias, Self, Literal
+
+from app.schemas.pagination import PaginationParams
 
 EntityId: TypeAlias = Annotated[int, Field(gt=0)]
 AddressLine: TypeAlias = Annotated[str, Field(min_length=1, max_length=200)]
 City: TypeAlias = Annotated[str, Field(min_length=1, max_length=40)]
 State: TypeAlias = Annotated[str, Field(min_length=1,max_length=50)]
 ZipCode: TypeAlias = Annotated[str, Field(min_length=1, max_length=15)]
-
 
 class InputSchema(BaseModel):
     """ Base for every request body, reject unknown fields and trim whitespace """
@@ -56,3 +57,9 @@ class AddressRead(BaseModel):
     user_id: int
     created_at: datetime
     updated_at: datetime
+
+
+AddressSort = Literal["id"]
+class AddressListParams(PaginationParams):
+    search: str | None = Field(default=None, min_length=1, max_length=200)
+    sort: AddressSort = "id"

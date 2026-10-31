@@ -24,6 +24,14 @@ alembic init db/migrations
 ```
 python -m db.init_db
 ```
+7. Print a user with vehicles and addresses:
+```
+python -m db.show_user_with_vehicles_addresses <user_id>
+```
+8. Seed the database with fake data:
+```
+python -m db.seed
+```
 
 ## Commands while programming
 1. Generate migrations

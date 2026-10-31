@@ -6,8 +6,7 @@ from collections.abc import Sequence
 from app.models.address import Address
 from app.repositories.address_repository import AddressRepository
 from app.repositories.user_repository import UserRepository
-from app.schemas.pagination import PaginationParams
-from app.schemas.address import AddressCreate, AddressUpdate
+from app.schemas.address import AddressCreate, AddressUpdate, AddressListParams
 from app.errors.exceptions import NotFoundError, ValidationError
 
 logger = logging.getLogger(__name__)
@@ -18,9 +17,9 @@ class AddressService:
         self._repository = repository
         self._user_repository = user_repository
 
-    def list_addresses(self, pagination: PaginationParams) ->  tuple[Sequence[Address], int]:
-        addresses = self._repository.list(offset=pagination.offset, limit=pagination.per_page)
-        return addresses, self._repository.count()
+    def list_addresses(self, params: AddressListParams) ->  tuple[Sequence[Address], int]:
+        addresses = self._repository.list(params)
+        return addresses, self._repository.count(params)
 
     def create_address(self, data: AddressCreate) -> Address:
         if self._user_repository.get_by_id(data.user_id) is None:
