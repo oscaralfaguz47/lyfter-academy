@@ -2,6 +2,7 @@ from flask import Flask
 
 from app.routes.health import health_bp
 from app.routes.users import users_bp
+from app.routes.auth import auth_bp
 
 from app.config import get_config
 from app.database import init_db
@@ -9,7 +10,7 @@ from app.errors.handlers import register_error_handlers
 from app.hooks import register_hooks
 from app.logging_config import configure_logging
 
-REQUIRED_SETTINGS = ("SECRET_KEY", "DATABASE_URL")
+REQUIRED_SETTINGS = ("SECRET_KEY", "DATABASE_URL", "JWT_SECRET_KEY")
 
 # Implementing the "Application factory" pattern, it is useful for:
 # 1.Tests: every test can create their own clean app with create_app("testing")
@@ -35,6 +36,7 @@ def create_app(config_name: str | None = None) -> Flask:
     # Declaring the API routes
     app.register_blueprint(health_bp)
     app.register_blueprint(users_bp)
+    app.register_blueprint(auth_bp)
 
     return app
 

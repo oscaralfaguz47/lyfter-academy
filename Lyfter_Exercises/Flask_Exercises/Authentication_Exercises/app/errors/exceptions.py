@@ -16,3 +16,9 @@ class ConflictError(DomainError):
 
 class ValidationError(DomainError):
     """ The input is well formed but has invalid values. """
+
+class UnauthorizedError(DomainError):
+    """ Missing, invalid or expired credentials. """
+
+class ForbiddenError(DomainError):
+    """ Authenticated, but not allowed to do something. """

@@ -5,7 +5,7 @@ from http import HTTPStatus
 from flask import Flask, Response, g, jsonify, request
 from werkzeug.exceptions import HTTPException
 
-from app.errors.exceptions import ConflictError, DomainError, NotFoundError, ValidationError
+from app.errors.exceptions import ConflictError, DomainError, NotFoundError, ValidationError, UnauthorizedError, ForbiddenError
 
 PROBLEM_CONTENT_TYPE = "application/problem+json"
 
@@ -43,6 +43,8 @@ STATUS_BY_ERROR: dict[type[DomainError], HTTPStatus] = {
     NotFoundError: HTTPStatus.NOT_FOUND,                  # 404
     ConflictError: HTTPStatus.CONFLICT,                   # 409
     ValidationError: HTTPStatus.UNPROCESSABLE_ENTITY,     # 422
+    UnauthorizedError: HTTPStatus.UNAUTHORIZED,
+    ForbiddenError: HTTPStatus.FORBIDDEN
 }
 
 # This tells to Flask "When this class or subclass of exception is thrown, then call to this function"
@@ -73,7 +75,10 @@ def _handle_domain_error(error: DomainError) -> Response:
     # type(error) gets the exact class, ex: NotFoundError
     # .get(..., BAD_REQUEST): if we create a new DomainError and forget to add it in the dict it falls as 400 instead of crashing 
     status = STATUS_BY_ERROR.get(type(error), HTTPStatus.BAD_REQUEST) 
-    return problem(status, error.message, error.details)
+    response = problem(status, error.message, error.details)
+    if isinstance(error, UnauthorizedError):
+        response.headers["WWW-Authenticate"] = "Bearer" # Required by HTTP on every 401
+    return response
 
 def _handle_http_exception(error: HTTPException) -> Response:
     """ 404 unknown route, 405 wrong method, 400 bad JSON, 413 too large, 500 unexpected. """

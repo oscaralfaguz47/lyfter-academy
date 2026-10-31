@@ -11,6 +11,9 @@ class Config:
     DB_SCHEMA = os.environ.get("DB_SCHEMA") # Optional
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
     MAX_CONTENT_LENGTH = 1 * 1024 * 1024 # 1 MB, bigger bodies get 413
+    JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
+    JWT_ACCESS_TOKEN_MINUTES = int(os.environ.get("JWT_ACCESS_TOKEN_MINUTES", "15"))
+    JWT_REFRESH_TOKEN_DAYS = int(os.environ.get("JWT_REFRESH_TOKEN_DAYS", "7"))
 
 
 class DevelopmentConfig(Config):

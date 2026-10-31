@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 from sqlalchemy import select, func
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, undefer
 
 from app.errors.exceptions import ConflictError
 from app.models import User
@@ -23,6 +23,11 @@ class UserRepository:
 
     def get_by_email(self, email: str) -> User | None:
         return self._session.scalar(select(User).where(User.email == email))
+
+    def get_by_email_with_password(self, email: str) -> User | None:
+        """ The only query that loads password_hash """
+        query = select(User).where(User.email == email).options(undefer(User.password_hash))
+        return self._session.scalar(query)
 
     def count(self) -> int:
         return self._session.scalar(select(func.count()).select_from(User)) or 0
