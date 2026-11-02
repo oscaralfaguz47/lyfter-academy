@@ -1,22 +1,29 @@
 from collections.abc import Sequence
 
-from sqlalchemy import select, func
+from sqlalchemy import select, func, Select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, undefer
 
 from app.errors.exceptions import ConflictError
 from app.models import User
 
+from app.schemas.user import UserListParams
+
 USER_REFERENCING_CONSTRAINTS = {"fk_addresses_user_id_users", "fk_vehicles_user_id_users"}
+SORT_COLUMNS = {"id": User.id, "name": User.name}
 
 class UserRepository:
     # The session is injected and the repository never calls get_session()
     def __init__(self, session: Session) -> None:
         self._session = session
 
-    def list(self, offset: int, limit: int) -> Sequence[User]:
-        query = select(User).order_by(User.id).offset(offset).limit(limit)
+    def list(self, params: UserListParams) -> Sequence[User]:
+        query = self._filtered(params).order_by(*_sort_clauses(params.sort)).offset(params.offset).limit(params.per_page)
         return self._session.scalars(query).all()
+
+    def count(self, params: UserListParams) -> int:
+        query = self._filtered(params).with_only_columns(func.count(User.id))
+        return self._session.scalar(query) or 0
     
     def get_by_id(self, user_id: int) -> User | None:
         return self._session.get(User, user_id)
@@ -29,8 +36,6 @@ class UserRepository:
         query = select(User).where(User.email == email).options(undefer(User.password_hash))
         return self._session.scalar(query)
 
-    def count(self) -> int:
-        return self._session.scalar(select(func.count()).select_from(User)) or 0
 
     def add(self, user: User) -> User:
         self._session.add(user)
@@ -52,6 +57,10 @@ class UserRepository:
                 raise ConflictError(f"User {user.id} still has addresses or vehicles assigned.") from error
             raise
 
+    def _filtered(self, params: UserListParams) -> Select:
+        query = select(User)
+        return query
+
     def _flush(self, user: User) -> None:
         try:
             # flush() sends the SQL inside the open transaction, it gives us user.id and triggers constraints checks right now
@@ -66,3 +75,7 @@ class UserRepository:
 def _violated_constraint(error: IntegrityError) -> str | None:
     diagnostics = getattr(error.orig, "diag", None)
     return getattr(diagnostics, "constraint_name", None)
+
+def _sort_clauses(sort: str) -> tuple:
+    column = SORT_COLUMNS[sort.lstrip("-")]
+    return (column.desc() if sort.startswith("-") else column.asc(), User.id)

@@ -6,8 +6,7 @@ from sqlalchemy.orm import Session
 from app.errors.exceptions import ConflictError, NotFoundError
 from app.models import User
 from app.repositories.user_repository import UserRepository
-from app.schemas.user import UserCreate, UserUpdate
-from app.schemas.pagination import PaginationParams
+from app.schemas.user import UserCreate, UserUpdate, UserListParams
 
 logger = logging.getLogger(__name__)
 
@@ -16,9 +15,9 @@ class UserService:
         self._session = session
         self._repository = repository
 
-    def list_users(self, pagination: PaginationParams) -> tuple[Sequence[User], int]:
-        users = self._repository.list(offset=pagination.offset, limit=pagination.per_page)
-        return users, self._repository.count()
+    def list_users(self, params: UserListParams) -> tuple[Sequence[User], int]:
+        users = self._repository.list(params)
+        return users, self._repository.count(params)
 
     def get_user(self, user_id: int) -> User:
         user = self._repository.get_by_id(user_id)

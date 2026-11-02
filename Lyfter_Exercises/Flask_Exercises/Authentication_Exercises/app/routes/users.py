@@ -4,9 +4,8 @@ from flask import Blueprint, request, url_for
 
 from app.database import get_session
 from app.repositories.user_repository import UserRepository
-from app.schemas.user import UserCreate, UserRead, UserUpdate
+from app.schemas.user import UserCreate, UserRead, UserUpdate, UserListParams
 from app.schemas.validation import parse
-from app.schemas.pagination import PaginationParams
 from app.services.user_service import UserService
 from app.routes.responses import created, serialize, ok, no_content, pagination_meta, serialize_many
 
@@ -21,9 +20,9 @@ def _user_service() -> UserService:
 
 @users_bp.get("")
 def list_users():
-    pagination = parse(PaginationParams, request.args.to_dict(), "Invalid query parameters.")
-    users, total = _user_service().list_users(pagination)
-    meta = pagination_meta(pagination.page, pagination.per_page, total)
+    params = parse(UserListParams, request.args.to_dict(), "Invalid query parameters.")
+    users, total = _user_service().list_users(params)
+    meta = pagination_meta(params.page, params.per_page, total)
     return ok(serialize_many(UserRead, users), meta=meta)
 
 @users_bp.get("/<int:user_id>")
