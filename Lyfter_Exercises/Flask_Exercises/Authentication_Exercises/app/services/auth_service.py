@@ -12,6 +12,7 @@ from app.security.tokens import TokenPair, TokenService, TokenType
 logger = logging.getLogger(__name__)
 
 INVALID_CREDENTIALS = "Invalid email or password."
+DUMMY_PASSWORD_HASH = hash_password("timing-equalizer")
 
 
 class AuthService:
@@ -28,19 +29,30 @@ class AuthService:
         self._users.add(user)
         self._session.commit()
         logger.info("Registered user %s", user.id)
-        return user, self._tokens.create_pair(user.id)
+        return user, self._tokens.create_pair(user.id, user.token_version)
 
     def login(self, data: LoginRequest) -> TokenPair:
         user = self._users.get_by_email_with_password(data.email)
         # Sme message whether the email of password is wrong.
-        if user is None or not verify_password(data.password, user.password_hash):
-            logger.info("Failed, login attempt")
+        if user is None:
+            verify_password(data.password, DUMMY_PASSWORD_HASH)
+            raise UnauthorizedError(INVALID_CREDENTIALS)
+        if not verify_password(data.password, user.password_hash):
+            logger.info("Failed login attempt for user %s", user.id)
             raise UnauthorizedError(INVALID_CREDENTIALS)
         logger.info("User %s logged in", user.id)
-        return self._tokens.create_pair(user.id)
+        return self._tokens.create_pair(user.id, user.token_version)
 
     def refresh(self, refresh_token: str) -> TokenPair:
-        user_id = self._tokens.verify(refresh_token, TokenType.REFRESH)
-        if self._users.get_by_id(user_id) is None:
+        claims = self._tokens.verify(refresh_token, TokenType.REFRESH)
+        user = self._users.get_by_id(claims.user_id)
+        if user is None or user.token_version != claims.version:
             raise UnauthorizedError("Invalid token.") # The user was deleted after the token was issued
-        return self._tokens.create_pair(user_id)
+        return self._tokens.create_pair(user.id, user.token_version)
+
+    def logout(self, user_id: int) -> None:
+        """ Invalidates every token of this user, on every device. """
+        user = self._users.get_by_id(user_id)
+        user.token_version += 1
+        self._session.commit()
+        logger.info("User %s logged out", user_id)

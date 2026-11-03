@@ -3,9 +3,10 @@
 from datetime import datetime
 from typing import Annotated, TypeAlias, Literal
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, AfterValidator, model_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, AfterValidator, model_validator, computed_field
 
 from app.schemas.pagination import PaginationParams
+from app.security.permissions import UserRole, Permission, ROLE_PERMISSIONS
 
 # Reusable type, a valid email and lowercased
 NormalizedEmail: TypeAlias = Annotated[EmailStr, AfterValidator(str.lower), Field(max_length=120)]
@@ -52,9 +53,17 @@ class UserRead(BaseModel):
     email: str
     created_at: datetime
     updated_at: datetime
+    role: UserRole
+
+class MeRead(UserRead):
+    @computed_field
+    @property
+    def permissions(self) -> list[Permission]:
+        return sorted(ROLE_PERMISSIONS[self.role])
 
 
 UserSort = Literal["id", "-id", "name", "-name"]
 class UserListParams(PaginationParams):
     min_vehicles: int | None = Field(default=None, ge=1)
     sort: UserSort = "id"
+

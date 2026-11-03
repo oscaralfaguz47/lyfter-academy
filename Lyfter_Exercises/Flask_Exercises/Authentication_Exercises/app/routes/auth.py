@@ -1,11 +1,11 @@
 from flask import Blueprint, request, url_for
 
-from app.auth import current_user_id, get_token_service, login_required
+from app.auth import get_token_service, login_required, current_actor
 from app.database import get_session
 from app.repositories.user_repository import UserRepository
-from app.routes.responses import created, ok, serialize
+from app.routes.responses import created, ok, serialize, no_content
 from app.schemas.auth import LoginRequest, RefreshRequest, RegisterRequest, TokenResponse
-from app.schemas.user import UserRead
+from app.schemas.user import UserRead, MeRead
 from app.schemas.validation import parse
 from app.security.tokens import TokenPair
 from app.services.auth_service import AuthService
@@ -42,5 +42,12 @@ def refresh():
 @login_required
 def me():
     session = get_session()
-    user = UserService(session, UserRepository(session)).get_user(current_user_id())
-    return ok(serialize(UserRead, user))
+    actor = current_actor()
+    user = UserService(session, UserRepository(session)).get_user(actor, actor.id)
+    return ok(serialize(MeRead, user))
+
+@auth_bp.post("/logout")
+@login_required
+def logout():
+    _auth_service().logout(current_actor().id)
+    return no_content()

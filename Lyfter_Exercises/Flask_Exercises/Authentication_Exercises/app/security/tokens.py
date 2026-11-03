@@ -11,9 +11,16 @@ from app.errors.exceptions import UnauthorizedError
 ALGORITHM = "HS256"
 MIN_SECRET_BYTES = 32
 
+
+
 class TokenType(StrEnum):
     ACCESS = "access"
     REFRESH = "refresh"
+
+@dataclass(frozen=True)
+class TokenClaims:
+    user_id: int
+    version: int
 
 @dataclass(frozen=True)
 class TokenPair:
@@ -30,10 +37,10 @@ class TokenService:
         self._secret = secret
         self._lifetimes = {TokenType.ACCESS: access_lifetime, TokenType.REFRESH: refresh_lifetime}
 
-    def create_pair(self, user_id: int) -> TokenPair:
+    def create_pair(self, user_id: int, version: int) -> TokenPair:
         return TokenPair(
-            access_token=self._encode(user_id, TokenType.ACCESS),
-            refresh_token=self._encode(user_id, TokenType.REFRESH),
+            access_token=self._encode(user_id, version, TokenType.ACCESS),
+            refresh_token=self._encode(user_id, version, TokenType.REFRESH),
             expires_in=int(self._lifetimes[TokenType.ACCESS].total_seconds()),
         )
 
@@ -53,14 +60,15 @@ class TokenService:
 
         if claims["type"] != expected_type:
             raise UnauthorizedError("Invalid token.")
-        return int(claims["sub"])
+        return TokenClaims(user_id=int(claims["sub"]), version=int(claims["ver"]))
         
 
-    def _encode(self, user_id: int, token_type: TokenType) -> str:
+    def _encode(self, user_id: int, version: int, token_type: TokenType) -> str:
         now = datetime.now(UTC)
         payload = {
             "sub": str(user_id),
             "type": token_type.value,
+            "ver": version,
             "iat": now,
             "exp": now + self._lifetimes[token_type]
         }

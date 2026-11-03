@@ -9,8 +9,8 @@ from app.models import User
 
 from app.schemas.user import UserListParams
 
-USER_REFERENCING_CONSTRAINTS = {"fk_addresses_user_id_users", "fk_vehicles_user_id_users"}
 SORT_COLUMNS = {"id": User.id, "name": User.name}
+USER_REFERENCING_CONSTRAINTS = {"fk_products_created_by_id_users", "fk_products_updated_by_id_users", "fk_invoices_client_id_users"}
 
 class UserRepository:
     # The session is injected and the repository never calls get_session()
@@ -54,7 +54,7 @@ class UserRepository:
             self._session.flush()
         except IntegrityError as error:
             if _violated_constraint(error) in USER_REFERENCING_CONSTRAINTS:
-                raise ConflictError(f"User {user.id} still has addresses or vehicles assigned.") from error
+                raise ConflictError(f"User {user.id} still has products that references them.") from error
             raise
 
     def _filtered(self, params: UserListParams) -> Select:

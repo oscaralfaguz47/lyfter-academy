@@ -10,6 +10,8 @@ from app.database import init_db
 from app.errors.handlers import register_error_handlers
 from app.hooks import register_hooks
 from app.logging_config import configure_logging
+from app.commands import register_commands
+from app.security.tokens import MIN_SECRET_BYTES
 
 REQUIRED_SETTINGS = ("SECRET_KEY", "DATABASE_URL", "JWT_SECRET_KEY")
 
@@ -34,6 +36,8 @@ def create_app(config_name: str | None = None) -> Flask:
     # Here we register the handlers that turn every error raised in the API into a "JSON response"
     register_error_handlers(app)
 
+    register_commands(app)
+
     # Declaring the API routes
     app.register_blueprint(health_bp)
     app.register_blueprint(users_bp)
@@ -46,3 +50,5 @@ def _validate_config(app: Flask) -> None:
     missing = [key for key in REQUIRED_SETTINGS if not app.config.get(key)]
     if missing:
         raise RuntimeError(f"Missing required settings: {', '.join(missing)}. Check your .env file.")
+    if len(app.config["JWT_SECRET_KEY"].encode("utf-8")) < MIN_SECRET_BYTES:
+        raise RuntimeError(f"JWT_SECRET_KEY must be at least {MIN_SECRET_BYTES} bytes.")
