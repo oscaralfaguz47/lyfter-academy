@@ -1,9 +1,11 @@
 from flask import Flask
+from pathlib import Path
 
 from app.routes.health import health_bp
 from app.routes.users import users_bp
 from app.routes.auth import auth_bp
 from app.routes.product import products_bp
+from app.routes.invoice import invoices_bp
 
 from app.config import get_config
 from app.database import init_db
@@ -11,9 +13,8 @@ from app.errors.handlers import register_error_handlers
 from app.hooks import register_hooks
 from app.logging_config import configure_logging
 from app.commands import register_commands
-from app.security.tokens import MIN_SECRET_BYTES
 
-REQUIRED_SETTINGS = ("SECRET_KEY", "DATABASE_URL", "JWT_SECRET_KEY")
+REQUIRED_SETTINGS = ("DATABASE_URL", "JWT_PRIVATE_KEY_PATH", "JWT_PUBLIC_KEY_PATH")
 
 # Implementing the "Application factory" pattern, it is useful for:
 # 1.Tests: every test can create their own clean app with create_app("testing")
@@ -43,6 +44,7 @@ def create_app(config_name: str | None = None) -> Flask:
     app.register_blueprint(users_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(products_bp)
+    app.register_blueprint(invoices_bp)
 
     return app
 
@@ -50,5 +52,5 @@ def _validate_config(app: Flask) -> None:
     missing = [key for key in REQUIRED_SETTINGS if not app.config.get(key)]
     if missing:
         raise RuntimeError(f"Missing required settings: {', '.join(missing)}. Check your .env file.")
-    if len(app.config["JWT_SECRET_KEY"].encode("utf-8")) < MIN_SECRET_BYTES:
-        raise RuntimeError(f"JWT_SECRET_KEY must be at least {MIN_SECRET_BYTES} bytes.")
+    app.config["JWT_PRIVATE_KEY"] = Path(app.config["JWT_PRIVATE_KEY_PATH"]).read_text()
+    app.config["JWT_PUBLIC_KEY"] = Path(app.config["JWT_PUBLIC_KEY_PATH"]).read_text()

@@ -16,6 +16,7 @@ class InvoiceLine(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     quantity: Mapped[Decimal] = mapped_column(Numeric(12,3))
     price: Mapped[Decimal] = mapped_column(Numeric(10, 2))
+    total_amount: Mapped[Decimal] = mapped_column(Numeric(10, 2))
 
     # FK for invoice
     product_id: Mapped[int] = mapped_column(ForeignKey("products.id", ondelete="RESTRICT"), index=True)

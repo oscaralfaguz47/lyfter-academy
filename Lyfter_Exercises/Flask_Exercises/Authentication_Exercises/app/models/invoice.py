@@ -22,7 +22,7 @@ class Invoice(AuditMixin, TimesTampMixin, Base):
     client_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"), index=True)
 
     # FK Relationships
-    user_client: Mapped["User"] = relationship(back_populates="invoices")
+    user_client: Mapped["User"] = relationship(back_populates="invoices", foreign_keys=[client_id])
 
     # Relationships in many
-    invoice_lines: Mapped[list[InvoiceLine]] = relationship(back_populates="invoice", passive_deletes="all")
+    invoice_lines: Mapped[list["InvoiceLine"]] = relationship(back_populates="invoice", passive_deletes="all")

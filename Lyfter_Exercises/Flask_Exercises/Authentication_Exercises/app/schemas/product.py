@@ -1,7 +1,7 @@
 from pydantic import Field, field_validator, model_validator
 from typing import Annotated, TypeAlias, Literal, Self
 from decimal import Decimal
-from datetime import datetime
+from datetime import datetime, date
 
 from app.schemas.input_schema import InputSchema
 from app.schemas.pagination import PaginationParams
@@ -16,6 +16,7 @@ class ProductCreate(InputSchema):
 
     name: ProductName
     price: Price
+    entry_date: date | None = None
 
 ProductSort = Literal["id"]
 class ProductListParams(PaginationParams):
@@ -28,6 +29,7 @@ class ProductRead(ReadSchema):
     name: str
     price: Decimal
     stock: Decimal
+    entry_date: date 
     created_by_id: int
     updated_by_id: int | None
     created_at: datetime
@@ -36,8 +38,9 @@ class ProductRead(ReadSchema):
 class ProductUpdate(InputSchema):
     name: ProductName | None = None
     price: Price | None = None
+    entry_date: date | None = None
 
-    @field_validator("name", "price")
+    @field_validator("name", "price", "entry_date")
     @classmethod
     def reject_null(cls, value: str | None) -> str:
         if value is None:

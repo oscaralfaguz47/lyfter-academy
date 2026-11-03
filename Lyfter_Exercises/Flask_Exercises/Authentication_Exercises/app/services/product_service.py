@@ -22,7 +22,7 @@ class ProductService:
         return products, self._repository.count(params)
 
     def create_product(self, data: ProductCreate, user_id: int) -> Product:
-        product = Product(**data.model_dump(), created_by_id=user_id)
+        product = Product(**data.model_dump(exclude_none=True), created_by_id=user_id)
         self._repository.add(product)
         self._session.commit()
         logger.info("User %s created product %s", user_id, product.id)

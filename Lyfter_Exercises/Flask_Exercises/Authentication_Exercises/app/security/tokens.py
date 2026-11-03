@@ -8,8 +8,7 @@ import jwt
 
 from app.errors.exceptions import UnauthorizedError
 
-ALGORITHM = "HS256"
-MIN_SECRET_BYTES = 32
+ALGORITHM = "RS256"
 
 
 
@@ -30,11 +29,9 @@ class TokenPair:
 
 
 class TokenService:
-    def __init__(self, secret: str, access_lifetime: timedelta, refresh_lifetime: timedelta) -> None:
-        if len(secret.encode("utf-8")) < MIN_SECRET_BYTES:
-            raise ValueError(f"JWT_SECRET_KEY must be at least {MIN_SECRET_BYTES} bytes long.")
-        
-        self._secret = secret
+    def __init__(self, private_key: str, public_key: str, access_lifetime: timedelta, refresh_lifetime: timedelta) -> None:        
+        self._private_key = private_key
+        self._public_key = public_key
         self._lifetimes = {TokenType.ACCESS: access_lifetime, TokenType.REFRESH: refresh_lifetime}
 
     def create_pair(self, user_id: int, version: int) -> TokenPair:
@@ -49,9 +46,9 @@ class TokenService:
         try: 
             claims = jwt.decode(
                 token,
-                self._secret,
+                self._public_key,
                 algorithms=[ALGORITHM],
-                options={"require": ["sub", "type", "iat", "exp"]},
+                options={"require": ["sub", "type", "ver", "iat", "exp"]},
             )
         except jwt.ExpiredSignatureError as error:
             raise UnauthorizedError("Token has expired.") from error
@@ -72,4 +69,4 @@ class TokenService:
             "iat": now,
             "exp": now + self._lifetimes[token_type]
         }
-        return jwt.encode(payload, self._secret, algorithm=ALGORITHM)
+        return jwt.encode(payload, self._private_key, algorithm=ALGORITHM)

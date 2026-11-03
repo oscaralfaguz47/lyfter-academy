@@ -15,6 +15,7 @@ class Permission(StrEnum):
     PRODUCTS_UPDATE = "products:update"
     PRODUCTS_DELETE = "products:delete"
     PRODUCTS_RESTOCK = "products:restock"
+    INVOICES_READ = "invoices:read"
 
 ROLE_PERMISSIONS: dict[UserRole, frozenset[Permission]] = {
     UserRole.ADMIN: frozenset(Permission),

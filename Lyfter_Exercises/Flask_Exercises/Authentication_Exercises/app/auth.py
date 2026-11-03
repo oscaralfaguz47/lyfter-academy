@@ -14,7 +14,8 @@ from app.database import get_session
 def get_token_service() -> TokenService:
     config = current_app.config
     return TokenService(
-        secret=config["JWT_SECRET_KEY"],
+        private_key=config["JWT_PRIVATE_KEY"],
+        public_key=config["JWT_PUBLIC_KEY"],
         access_lifetime=timedelta(minutes=config["JWT_ACCESS_TOKEN_MINUTES"]),
         refresh_lifetime=timedelta(days=config["JWT_REFRESH_TOKEN_DAYS"]),
     )

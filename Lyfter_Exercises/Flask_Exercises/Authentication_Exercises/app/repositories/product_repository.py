@@ -1,10 +1,12 @@
 from sqlalchemy import Select, select, or_, func, update
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from collections.abc import Sequence
 from decimal import Decimal
 
 from app.models.product import Product
 from app.schemas.product import ProductListParams
+from app.errors.exceptions import ConflictError
 
 
 SEARCHABLE_COLUMNS = (Product.name)
@@ -36,7 +38,12 @@ class ProductRepository:
 
     def delete(self, product: Product) -> None:
         self._session.delete(product)
-        self._session.flush()
+        try:
+            self._session.flush()
+        except IntegrityError as error:
+            if _violated_constraint(error) == "fk_invoice_lines_product_id_products":
+                raise ConflictError(f"Product {product.id} has invoices and cannot be deleted.") from error
+            raise
 
     def increase_stock(self, product_id: int, quantity: Decimal, user_id: int) -> Product | None:
         query = (
@@ -46,6 +53,18 @@ class ProductRepository:
             .returning(Product)
         )
         return self._session.scalar(query)
+
+    def get_many_for_updates(self, product_ids: list[int]) -> Sequence[Product]:
+        """ Load and lock these rows until commit, equals to: (SELECT ... FOR UPDATE)"""
+        """ Ordered by id, so two purchases locking the same product always lock them in the same order. """
+        query = (
+            select(Product)
+            .where(Product.id.in_(product_ids))
+            .order_by(Product.id)
+            .with_for_update()
+        )
+        return self._session.scalars(query).all()
+    
 
     def _filtered(self, params: ProductListParams) -> Select:
         query = select(Product)
@@ -58,7 +77,9 @@ class ProductRepository:
     def _flush(self) -> None:
         self._session.flush()
 
-
+def _violated_constraint(error: IntegrityError) -> str | None:
+    diagnostics = getattr(error.orig, "diag", None)
+    return getattr(diagnostics, "constraint_name", None)
 
 def _sort_clauses(sort: str) -> tuple:
     column = SORT_COLUMNS[sort.lstrip("-")]

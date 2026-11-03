@@ -12,19 +12,24 @@ source .venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -r requirements-dev.txt
 ```
-4. Run the API
+4. Generate de private and public .pem files
+```
+openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out keys/jwt_private.pem
+openssl rsa -in keys/jwt_private.pem -pubout -out keys/jwt_public.pem
+```
+5. Run the API
 ```
 flask run --debug
 ```
-5. Set up Alembic, from the project root, run the following:
+6. Set up Alembic, from the project root, run the following:
 ```
 alembic init db/migrations
 ```
-6. Verify if all tables exist
+7. Verify if all tables exist
 ```
 python -m db.init_db
 ```
-7. Make a user 'Admin'
+8. Make a user 'Admin'
 ```
 flask --app app promote-admin <the user's email>
 ```

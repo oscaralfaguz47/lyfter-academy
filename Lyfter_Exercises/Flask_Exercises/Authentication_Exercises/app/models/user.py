@@ -27,5 +27,5 @@ class User(TimesTampMixin, Base):
     token_version: Mapped[int] = mapped_column(default=0, server_default="0")
 
     # Relationship in many
-    invoices: Mapped[list["Invoice"]] = relationship(back_populates="user_client", passive_deletes="all")
+    invoices: Mapped[list["Invoice"]] = relationship(back_populates="user_client", foreign_keys="Invoice.client_id", passive_deletes="all")
 
