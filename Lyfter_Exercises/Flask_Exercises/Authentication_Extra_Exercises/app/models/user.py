@@ -1,6 +1,6 @@
 
 from sqlalchemy import String, Enum
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
 from app.models.mixins import TimesTampMixin
@@ -8,7 +8,7 @@ from app.security.permissions import UserRole
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from app.models.invoice import Invoice
+    from app.models.contact import Contact
 
 
 class User(TimesTampMixin, Base):
@@ -25,5 +25,8 @@ class User(TimesTampMixin, Base):
         server_default=UserRole.USER.value,
     )
     token_version: Mapped[int] = mapped_column(default=0, server_default="0")
+
+    # Relationship with many
+    contacts: Mapped[list["Contact"]] = relationship(back_populates="user", passive_deletes="all")
 
 

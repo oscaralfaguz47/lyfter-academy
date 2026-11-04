@@ -4,6 +4,7 @@ from pathlib import Path
 from app.routes.health import health_bp
 from app.routes.users import users_bp
 from app.routes.auth import auth_bp
+from app.routes.contact import contact_bp
 
 from app.config import get_config
 from app.database import init_db
@@ -41,6 +42,7 @@ def create_app(config_name: str | None = None) -> Flask:
     app.register_blueprint(health_bp)
     app.register_blueprint(users_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(contact_bp)
 
     return app
 
