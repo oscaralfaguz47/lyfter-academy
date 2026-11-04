@@ -41,8 +41,8 @@ class TokenService:
             expires_in=int(self._lifetimes[TokenType.ACCESS].total_seconds()),
         )
 
-    def verify(self, token: str, expected_type: TokenType) -> int:
-        """ Raise the user ID inside a valid token of 'expected_type', or raise UnauthorizedError. """
+    def verify(self, token: str, expected_type: TokenType) -> TokenClaims:
+        """ Return the claims of a valid token of 'expected_type', or raise UnauthorizedError. """
         try: 
             claims = jwt.decode(
                 token,

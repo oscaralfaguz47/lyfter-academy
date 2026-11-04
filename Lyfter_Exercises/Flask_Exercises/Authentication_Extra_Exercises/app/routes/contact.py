@@ -4,9 +4,9 @@ from app.database import get_session
 from app.services.contact_service import ContactService
 from app.repositories.contact_repository import ContactRepository
 from app.auth import current_actor, login_required
-from app.schemas.contact import ContactListParams, ContactRead, ContactCreate
+from app.schemas.contact import ContactListParams, ContactRead, ContactCreate, ContactUpdate
 from app.schemas.validation import parse
-from app.routes.responses import pagination_meta, ok, serialize_many, created, serialize
+from app.routes.responses import pagination_meta, ok, serialize_many, created, serialize, no_content
 
 contact_bp = Blueprint("contacts", __name__, url_prefix="/api/v1/contacts")
 
@@ -34,4 +34,17 @@ def create_contact():
 @login_required
 def get_contact(contact_id: int):
     contact = _contact_service().get_contact(contact_id, current_actor())
+    return ok(serialize(ContactRead, contact))
+
+@contact_bp.delete("/<int:contact_id>")
+@login_required
+def delete_contact(contact_id: int):
+    _contact_service().delete_contact(contact_id, current_actor())
+    return no_content()
+
+@contact_bp.patch("/<int:contact_id>")
+@login_required
+def update_contact(contact_id:int):
+    data = parse(ContactUpdate, request.get_json())
+    contact = _contact_service().update_contact(data, contact_id, current_actor())
     return ok(serialize(ContactRead, contact))

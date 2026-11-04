@@ -3,6 +3,7 @@ from flask import Blueprint, request, url_for
 from app.auth import get_token_service, login_required, current_actor
 from app.database import get_session
 from app.repositories.user_repository import UserRepository
+from app.repositories.login_history_repository import LoginHistoryRepository
 from app.routes.responses import created, ok, serialize, no_content
 from app.schemas.auth import LoginRequest, RefreshRequest, RegisterRequest, TokenResponse
 from app.schemas.user import UserRead, MeRead
@@ -15,7 +16,7 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/api/v1/auth")
 
 def _auth_service() -> AuthService:
     session = get_session()
-    return AuthService(session, UserRepository(session), get_token_service())
+    return AuthService(session, UserRepository(session), LoginHistoryRepository(session), get_token_service())
 
 def _tokens_body(tokens: TokenPair) -> dict:
     return TokenResponse(**vars(tokens)).model_dump()
@@ -31,9 +32,9 @@ def register():
 @auth_bp.post("/login")
 def login():
     data = parse(LoginRequest, request.get_json())
-    return ok(_tokens_body(_auth_service().login(data)))
+    return ok(_tokens_body(_auth_service().login(data, request.remote_addr)))
 
-@auth_bp.post("/refresh")
+@auth_bp.post("/refresh-token")
 def refresh():
     data = parse(RefreshRequest, request.get_json())
     return ok(_tokens_body(_auth_service().refresh(data.refresh_token)))

@@ -9,6 +9,7 @@ from app.security.permissions import UserRole
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from app.models.contact import Contact
+    from app.models.login_history import LoginHistory
 
 
 class User(TimesTampMixin, Base):
@@ -28,5 +29,6 @@ class User(TimesTampMixin, Base):
 
     # Relationship with many
     contacts: Mapped[list["Contact"]] = relationship(back_populates="user", passive_deletes="all")
+    login_history: Mapped[list["LoginHistory"]] = relationship(back_populates="user", passive_deletes="all")
 
 

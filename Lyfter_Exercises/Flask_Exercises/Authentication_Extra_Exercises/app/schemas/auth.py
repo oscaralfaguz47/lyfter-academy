@@ -21,7 +21,7 @@ class LoginRequest(BaseModel):
     password: LoginPassword
 
 class RefreshRequest(BaseModel):
-    """ Body of POST /auth/refresh. """
+    """ Body of POST /auth/refresh-token. """
     model_config = ConfigDict(extra="forbid")
 
     refresh_token: Annotated[str, Field(min_length=1)]

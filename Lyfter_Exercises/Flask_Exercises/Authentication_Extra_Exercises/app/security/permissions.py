@@ -12,8 +12,8 @@ class Permission(StrEnum):
     USERS_UPDATE = "users:update"
     USERS_DELETE = "users:delete"
     CONTACTS_READ = "contacts:read"
-    CONTACTS_UPDATE = "contacts:update"
     CONTACTS_DELETE = "contacts:delete"
+    LOGIN_HISTORY_READ = "login_history:read"
 
 ROLE_PERMISSIONS: dict[UserRole, frozenset[Permission]] = {
     UserRole.ADMIN: frozenset(Permission),

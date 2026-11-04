@@ -10,11 +10,11 @@ from app.schemas.contact import ContactListParams
 
 SORT_COLUMNS = {"id": Contact.id, "name": Contact.name}
 CONSTRAINT_ERRORS: dict[str, tuple[type[DomainError], str]] = {
-    "uq_contacts_email": (ConflictError,"The email can appear only once, the attempted to save already exists."),
-    "uq_contacts_phone": (ConflictError, "The phone can appear only once the attempted to save already exists."),
+    "uq_contacts_user_id_email": (ConflictError,"The email can appear only once, the attempted to save already exists."),
+    "uq_contacts_user_id_phone": (ConflictError, "The phone can appear only once the attempted to save already exists."),
     "fk_contacts_user_id_users": (NotFoundError, "User not found."),
 }
-SEARCHABLE_COLUMNS = {"name", "email", "phone"}
+SEARCHABLE_COLUMNS = (Contact.name, Contact.email, Contact.phone)
 
 class ContactRepository:
     def __init__(self, session: Session) -> None:
