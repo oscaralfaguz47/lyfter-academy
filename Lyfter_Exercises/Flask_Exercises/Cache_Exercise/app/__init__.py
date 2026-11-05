@@ -15,8 +15,9 @@ from app.errors.handlers import register_error_handlers
 from app.hooks import register_hooks
 from app.logging_config import configure_logging
 from app.commands import register_commands
+from app.cache import init_cache
 
-REQUIRED_SETTINGS = ("DATABASE_URL", "JWT_PRIVATE_KEY_PATH", "JWT_PUBLIC_KEY_PATH")
+REQUIRED_SETTINGS = ("DATABASE_URL", "REDIS_URL", "JWT_PRIVATE_KEY_PATH", "JWT_PUBLIC_KEY_PATH")
 
 # Implementing the "Application factory" pattern, it is useful for:
 # 1.Tests: every test can create their own clean app with create_app("testing")
@@ -34,6 +35,9 @@ def create_app(config_name: str | None = None) -> Flask:
 
     # After validate the config, the engine is created and the session factory and registers the session close at the end of every request.
     init_db(app) 
+
+    init_cache(app)
+
     # request ID, timing and headers on every request
     register_hooks(app)
     # Here we register the handlers that turn every error raised in the API into a "JSON response"

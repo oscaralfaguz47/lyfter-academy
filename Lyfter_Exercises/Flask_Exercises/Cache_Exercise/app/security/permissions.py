@@ -11,6 +11,7 @@ class Permission(StrEnum):
     USERS_READ = "users:read"
     USERS_UPDATE = "users:update"
     USERS_DELETE = "users:delete"
+    PRODUCTS_READ = "products:read"
     PRODUCTS_CREATE = "products:create"
     PRODUCTS_UPDATE = "products:update"
     PRODUCTS_DELETE = "products:delete"

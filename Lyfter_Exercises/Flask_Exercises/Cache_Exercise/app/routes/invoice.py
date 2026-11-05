@@ -4,18 +4,20 @@ from app.database import get_session
 from app.services.purchase_service import PurchaseService
 from app.repositories.product_repository import ProductRepository
 from app.repositories.invoice_repository import InvoiceRepository
+from app.repositories.product_cache import ProductCache
 from app.auth import login_required, current_actor
 from app.schemas.validation import parse
 from app.schemas.invoice import InvoiceListParams, InvoiceRead, PurchaseRequest
 from app.routes.responses import pagination_meta
 from app.routes.responses import created, ok, serialize, serialize_many
+from app.cache import get_cache
 
 
 invoices_bp = Blueprint("invoices", __name__, url_prefix="/api/v1/invoices")
 
 def _purchase_service() -> PurchaseService:
     session = get_session()
-    return PurchaseService(session, ProductRepository(session), InvoiceRepository(session))
+    return PurchaseService(session, ProductRepository(session), InvoiceRepository(session), ProductCache(get_cache()))
 
 @invoices_bp.post("")
 @login_required

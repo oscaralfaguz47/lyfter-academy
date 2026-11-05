@@ -17,19 +17,24 @@ python -m pip install -r requirements-dev.txt
 openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out keys/jwt_private.pem
 openssl rsa -in keys/jwt_private.pem -pubout -out keys/jwt_public.pem
 ```
-5. Run the API
+5.Create the Redis container (only once, Docker must be running)
+```
+docker run -d --name redis-cache -p 127.0.0.1:6379:6379 redis:8-alpine \
+  redis-server --save "" --appendonly no --maxmemory 128mb --maxmemory-policy volatile-lru
+```
+6. Run the API
 ```
 flask run --debug
 ```
-6. Set up Alembic, from the project root, run the following:
+7. Set up Alembic, from the project root, run the following:
 ```
 alembic init db/migrations
 ```
-7. Verify if all tables exist
+8. Verify if all tables exist
 ```
 python -m db.init_db
 ```
-8. Make a user 'Admin'
+9. Make a user 'Admin'
 ```
 flask --app app promote-admin <the user's email>
 ```
@@ -47,4 +52,12 @@ alembic upgrade head
 3. List existing roles with their permissions
 ```
 flask --app app permissions
+```
+4. Start Redis (every time we open the project)
+```
+docker start redis-cache
+```
+5. Monitor every command Redis receives
+```
+docker exec -it redis-cache redis-cli MONITOR
 ```

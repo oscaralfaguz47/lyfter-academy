@@ -9,6 +9,7 @@ class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY")
     DATABASE_URL = os.environ.get("DATABASE_URL")
     DB_SCHEMA = os.environ.get("DB_SCHEMA") # Optional
+    REDIS_URL = os.environ.get("REDIS_URL")
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
     MAX_CONTENT_LENGTH = 1 * 1024 * 1024 # 1 MB, bigger bodies get 413
     JWT_PRIVATE_KEY_PATH = os.environ.get("JWT_PRIVATE_KEY_PATH")
@@ -22,6 +23,7 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     TESTING = True  # Exceptions reach the test instead of becoming 500s
+    REDIS_URL = os.environ.get("TEST_REDIS_URL")
     DATABASE_URL = os.environ.get("TEST_DATABASE_URL")
 
 class ProductionConfig(Config):

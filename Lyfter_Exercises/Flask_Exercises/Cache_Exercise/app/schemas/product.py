@@ -35,6 +35,10 @@ class ProductRead(ReadSchema):
     created_at: datetime
     updated_at: datetime
 
+class ProductPage(ReadSchema):
+    items: list[ProductRead]
+    total: int
+
 class ProductUpdate(InputSchema):
     name: ProductName | None = None
     price: Price | None = None

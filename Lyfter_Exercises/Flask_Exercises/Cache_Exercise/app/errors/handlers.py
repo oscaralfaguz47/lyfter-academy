@@ -1,5 +1,10 @@
 """ Turn exceptions into RFC 9457 Problem Details JSON responses. """
 
+import logging
+from sqlalchemy.exc import OperationalError
+
+logger = logging.getLogger(__name__)
+
 from http import HTTPStatus
 
 from flask import Flask, Response, g, jsonify, request
@@ -53,6 +58,8 @@ def register_error_handlers(app: Flask) -> None:
     # HTTPException is the Werkzeug class, the library upon which Flask is built, for HTTP errors, 404, 405, malformed JSON and body too big.
     app.register_error_handler(HTTPException, _handle_http_exception)
 
+    app.register_error_handler(OperationalError, _handle_database_unavailable)
+
 # This is the function that builds the response
 def problem(status: HTTPStatus, detail: str | None = None, errors: dict | None = None) -> Response:
     """ Build a Problem Details response. """
@@ -89,6 +96,10 @@ def _handle_http_exception(error: HTTPException) -> Response:
         if name.lower() != "content-type":
             response.headers[name] = value
     return response
+
+def _handle_database_unavailable(error: OperationalError) -> Response:
+    logger.error("Database unavailable", exc_info=error)
+    return problem(HTTPStatus.SERVICE_UNAVAILABLE, "The service is temporarily unavailable.")
 
 # NOTES FOR UNDERSTANDING
 # What about unexpected errors like bugs or 1/0?, Flask already registers the traceback in the log and converts it to a 500 

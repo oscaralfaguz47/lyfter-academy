@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.database import get_session
+from app.cache import get_cache
 
 logger = logging.getLogger(__name__)
 
@@ -18,4 +19,5 @@ def health():
     except SQLAlchemyError:
         logger.exception("Database health check failed")
         return {"status": "error", "database": "unreachable"}, HTTPStatus.SERVICE_UNAVAILABLE
-    return {"status": "ok", "database": "ok"}, HTTPStatus.OK
+    cache_status = "ok" if get_cache().ping() else "unreachable"
+    return {"status": "ok", "database": "ok", "cache": cache_status}, HTTPStatus.OK

@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 
 from app.repositories.invoice_repository import InvoiceRepository
 from app.repositories.product_repository import ProductRepository
+from app.repositories.product_cache import ProductCache
 from app.schemas.invoice import PurchaseRequest, InvoiceListParams
 from app.security.permissions import Actor, Permission
 from app.models.invoice import Invoice
@@ -19,10 +20,16 @@ CENTS = Decimal("0.01")
 
 
 class PurchaseService:
-    def __init__(self, session: Session, product_repository: ProductRepository, invoice_repository: InvoiceRepository) -> None:
+    def __init__(
+            self, session: Session, 
+            product_repository: ProductRepository, 
+            invoice_repository: InvoiceRepository, 
+            product_cache: ProductCache
+            ) -> None:
         self._product_repository = product_repository
         self._invoice_repository = invoice_repository
         self._session = session
+        self._product_cache = product_cache
 
     def purchase(self, data: PurchaseRequest, actor: Actor) -> Invoice:
         quantities = {item.product_id: item.quantity for item in data.items}
@@ -45,6 +52,7 @@ class PurchaseService:
         # One commit for everything, invoice, invoice_lines and product.stock
         self._invoice_repository.add(invoice)
         self._session.commit()
+        self._product_cache.invalidate(*quantities)
         logger.info("User %s bought %s products (invoice %s, total %s)", actor.id, len(products), invoice.id, invoice.total_amount)
         return invoice
 
