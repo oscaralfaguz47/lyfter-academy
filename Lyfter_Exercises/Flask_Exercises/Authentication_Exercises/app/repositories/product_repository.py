@@ -9,7 +9,7 @@ from app.schemas.product import ProductListParams
 from app.errors.exceptions import ConflictError
 
 
-SEARCHABLE_COLUMNS = (Product.name)
+SEARCHABLE_COLUMNS = (Product.name,)
 SORT_COLUMNS = {"id": Product.id}
 
 class ProductRepository:
@@ -37,12 +37,13 @@ class ProductRepository:
         return product
 
     def delete(self, product: Product) -> None:
+        product_id = product.id
         self._session.delete(product)
         try:
             self._session.flush()
         except IntegrityError as error:
             if _violated_constraint(error) == "fk_invoice_lines_product_id_products":
-                raise ConflictError(f"Product {product.id} has invoices and cannot be deleted.") from error
+                raise ConflictError(f"Product {product_id} has invoices and cannot be deleted.") from error
             raise
 
     def increase_stock(self, product_id: int, quantity: Decimal, user_id: int) -> Product | None:
@@ -75,7 +76,12 @@ class ProductRepository:
         return query
 
     def _flush(self) -> None:
-        self._session.flush()
+        try:
+            self._session.flush()
+        except IntegrityError as error:
+            if _violated_constraint(error) == "uq_products_name":
+                raise ConflictError("A product with this name already exists.") from error
+            raise
 
 def _violated_constraint(error: IntegrityError) -> str | None:
     diagnostics = getattr(error.orig, "diag", None)
