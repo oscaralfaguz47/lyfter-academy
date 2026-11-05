@@ -6,7 +6,7 @@ from app.repositories.product_repository import ProductRepository
 from app.schemas.validation import parse
 from app.schemas.product import ProductRead, ProductListParams, ProductCreate, ProductUpdate, IncreaseProductStock
 from app.routes.responses import pagination_meta, serialize_many, ok, serialize, created, no_content
-from app.auth import login_required, current_user_id, permission_required
+from app.auth import current_user_id, permission_required
 from app.security.permissions import Permission
 
 
@@ -17,7 +17,7 @@ def _product_service() -> ProductService:
     return ProductService(session, ProductRepository(session))
 
 @products_bp.get("")
-@login_required
+@permission_required(Permission.PRODUCTS_READ)
 def list_products():
     params = parse(ProductListParams, request.args.to_dict(), "Invalid query params.")
     products, total = _product_service().list_products(params)
@@ -25,7 +25,7 @@ def list_products():
     return ok(serialize_many(ProductRead, products), meta=meta)
 
 @products_bp.get("/<int:product_id>")
-@login_required
+@permission_required(Permission.PRODUCTS_READ)
 def get_product(product_id: int):
     product = _product_service().get_product(product_id)
     return ok(serialize(ProductRead, product))

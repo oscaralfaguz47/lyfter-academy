@@ -49,12 +49,13 @@ class UserRepository:
         return user
 
     def delete(self, user: User) -> None:
+        user_id = user.id
         self._session.delete(user)
         try:
             self._session.flush()
         except IntegrityError as error:
             if _violated_constraint(error) in USER_REFERENCING_CONSTRAINTS:
-                raise ConflictError(f"User {user.id} still has products that references them.") from error
+                raise ConflictError(f"User {user_id} still has products that references them.") from error
             raise
 
     def _filtered(self, params: UserListParams) -> Select:
@@ -68,7 +69,7 @@ class UserRepository:
         except IntegrityError as error:
             # Postgres rejects the INSERT with the UNIQUE constraint, and we read the constraint failed "uq_users_email"
             if _violated_constraint(error) == "uq_users_email":
-                raise ConflictError(f"A user with email {user.email} already exists.") from error
+                raise ConflictError(f"A user with this email already exists.") from error
             raise # This other raise throws any other integrity error unchanged
 
 
