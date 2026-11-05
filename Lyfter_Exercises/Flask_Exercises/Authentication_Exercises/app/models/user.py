@@ -17,7 +17,7 @@ class User(TimesTampMixin, Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[str] = mapped_column(String(120), unique=True)
     password_hash: Mapped[str] = mapped_column(String(255), deferred=True) # Loaded only at login
-    name : Mapped[str] = mapped_column(String(30))
+    name : Mapped[str] = mapped_column(String(100))
 
     role: Mapped[UserRole] = mapped_column(
         Enum(UserRole, name="role_valid", native_enum=False, create_constraint=True, length=20, values_callable=lambda roles: [r.value for r in roles]),
