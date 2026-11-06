@@ -7,7 +7,7 @@ from app.repositories.contact_repository import ContactRepository
 from app.schemas.contact import ContactListParams, ContactCreate, ContactUpdate
 from app.security.permissions import Actor, Permission
 from app.models.contact import Contact
-from app.errors.handlers import NotFoundError, ForbiddenError
+from app.errors.exceptions import NotFoundError, ForbiddenError
 
 import logging
 logger = logging.getLogger(__name__)
