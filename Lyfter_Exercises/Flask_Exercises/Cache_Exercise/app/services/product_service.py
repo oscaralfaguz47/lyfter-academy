@@ -6,7 +6,7 @@ from app.repositories.product_cache import ProductCache
 from app.repositories.product_repository import ProductRepository
 from app.schemas.product import ProductCreate, ProductListParams, ProductUpdate, ProductRead, ProductPage
 from app.models.product import Product
-from app.errors.handlers import NotFoundError
+from app.errors.exceptions import NotFoundError
 
 from decimal import Decimal
 
@@ -19,7 +19,7 @@ class ProductService:
         self._repository = repository
         self._cache = cache
 
-    def list_products(self, params: ProductListParams) -> tuple[Sequence[Product], int]:
+    def list_products(self, params: ProductListParams) -> tuple[Sequence[ProductRead], int]:
         key = self._cache.list_key(params)
         cached = self._cache.get_list(key)
         if cached is not None:
@@ -38,13 +38,13 @@ class ProductService:
         logger.info("User %s created product %s", user_id, product.id)
         return product
 
-    def get_product(self, product_id: int) -> Product | None:
-        cached = self._cache.get_product(product_id)
+    def get_product(self, product_id: int) -> ProductRead:
+        cached = self._cache.get_item(product_id)
         if cached is not None:
             return cached
         
         product = ProductRead.model_validate(self._get_entity(product_id))
-        self._cache.set_product(product)
+        self._cache.set_item(product.id, product)
         return product
 
     def _get_entity(self, product_id: int) -> Product:
