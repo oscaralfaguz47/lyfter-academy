@@ -18,7 +18,7 @@ class ProductRepository:
 
     def list(self, params: ProductListParams) -> Sequence[Product]:
         query = self._filtered(params).order_by(*_sort_clauses(params.sort)).offset(params.offset).limit(params.per_page)
-        return self._session.scalars(query) or 0
+        return self._session.scalars(query).all()
 
     def count(self, params: ProductListParams) -> int:
         query = self._filtered(params).with_only_columns(func.count(Product.id))
