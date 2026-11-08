@@ -1,2 +1,5 @@
 # Include everything the app needs to run
 -r requirements.txt
+
+# Test runner
+pytest==9.2.0
