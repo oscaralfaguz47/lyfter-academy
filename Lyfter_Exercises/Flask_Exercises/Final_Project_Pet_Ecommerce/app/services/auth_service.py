@@ -28,7 +28,7 @@ class AuthService:
         if self._users.get_by_email(data.email) is not None:
             raise ConflictError(f"A user with email {data.email} already exists.")
 
-        user = User(name=data.name, email=data.email, password_hash=hash_password(data.password))
+        user = User(name=data.name, email=data.email, password_hash=hash_password(data.password), phone_number=data.phone_number)
         self._users.add(user)
         self._session.commit()
         logger.info("Registered user %s", user.id)

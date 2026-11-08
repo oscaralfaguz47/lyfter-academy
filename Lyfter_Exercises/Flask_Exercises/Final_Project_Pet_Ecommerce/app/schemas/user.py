@@ -11,6 +11,7 @@ from app.security.permissions import UserRole, Permission, ROLE_PERMISSIONS
 # Reusable type, a valid email and lowercased
 NormalizedEmail: TypeAlias = Annotated[EmailStr, AfterValidator(str.lower), Field(max_length=120)]
 UserName: TypeAlias = Annotated[str, Field(min_length=1, max_length=100)]
+PhoneNumber: TypeAlias = Annotated[str, Field(min_length=1, max_length=20)]
 
 class UserCreate(BaseModel):
     """ Body of POST /users """
@@ -19,6 +20,7 @@ class UserCreate(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
     name: UserName
+    phone_number: PhoneNumber
     # EmailStr validates the email format
     email: NormalizedEmail
 
@@ -27,6 +29,7 @@ class UserUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
     name: UserName | None = None
+    phone_number: PhoneNumber | None = None
     email: NormalizedEmail | None = None
 
     @field_validator("name", "email")
@@ -50,6 +53,7 @@ class UserRead(BaseModel):
 
     id: int
     name: str
+    phone_number: str
     email: str
     created_at: datetime
     updated_at: datetime

@@ -3,7 +3,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Numeric, ForeignKey, Identity
 from app.models.mixins import AuditMixin, TimesTampMixin
 from decimal import Decimal
-from datetime import datetime
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

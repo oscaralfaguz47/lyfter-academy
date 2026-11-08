@@ -19,7 +19,7 @@ openssl rsa -in keys/jwt_private.pem -pubout -out keys/jwt_public.pem
 ```
 5.Create the Redis container (only once, Docker must be running)
 ```
-docker run -d --name redis-cache -p 127.0.0.1:6379:6379 redis:8-alpine \
+docker run -d --name pet-ecommerce-redis-cache -p 127.0.0.1:6379:6379 redis:8-alpine \
   redis-server --save "" --appendonly no --maxmemory 128mb --maxmemory-policy volatile-lru
 ```
 6. Run the API

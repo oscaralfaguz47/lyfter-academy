@@ -6,7 +6,6 @@ from app.routes.users import users_bp
 from app.routes.auth import auth_bp
 from app.routes.product import products_bp
 from app.routes.invoice import invoices_bp
-from app.routes.contact import contact_bp
 from app.routes.login_history import login_history_bp
 
 from app.config import get_config
@@ -51,7 +50,6 @@ def create_app(config_name: str | None = None) -> Flask:
     app.register_blueprint(auth_bp)
     app.register_blueprint(products_bp)
     app.register_blueprint(invoices_bp)
-    app.register_blueprint(contact_bp)
     app.register_blueprint(login_history_bp)
 
     return app
