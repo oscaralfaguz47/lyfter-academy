@@ -4,24 +4,25 @@
 
 First time only:
 
-1. Create the test database: `createdb pet_ecommerce_test`, or use any empty database.
-2. Set `TEST_DATABASE_URL` and `TEST_REDIS_URL` in `.env`. Use a different Redis number than development (`/1`), because tests flush it.
-3. If `DB_SCHEMA` is set, create that schema in the test database too.
-4. Start Redis: `docker start redis-cache`.
+1. Install the dev dependencies: `pip install -r requirements-dev.txt`. It includes pytest.
+2. Create the test database. Its name must end in `_test`, for example `pet_ecommerce_test`. The tests refuse to run otherwise.
+3. If `DB_SCHEMA` is set, create the same schema in the test database, owned by the app user: `CREATE SCHEMA <name> AUTHORIZATION <user>;`. Tests reuse `DB_SCHEMA`; the separate database is what isolates them.
+4. Set `TEST_DATABASE_URL` and `TEST_REDIS_URL` in `.env`. Use a Redis database other than 0, for example `/1`: tests flush it and refuse to run against 0.
+5. Start Redis: `docker start redis-cache`.
 
 Then, from the project root:
 
 ```bash
-python scripts/run_tests.py                # everything, with a report
-python -m pytest                           # everything
-python -m pytest tests/routes/test_cart.py # one file
-python -m pytest -k checkout               # by name
-python -m pytest -x                        # stop at the first failure
+pytest                              # everything
+pytest tests/unit                   # pure logic, no database or Redis needed
+pytest tests/routes/test_auth.py    # one file
+pytest -k login                     # by name
+pytest -x                           # stop at the first failure
 ```
 
-Use `python -m pytest`, not `pytest`. It adds the current folder to the path so `import app` works.
+`pyproject.toml` sets `pythonpath = ["."]`, so plain `pytest` can `import app`.
 
-## Report script
+## Report script (planned, TEST-03)
 
 `scripts/run_tests.py`:
 
@@ -42,42 +43,36 @@ The assignment asks for tests of the API, and most of the risk is in rules Postg
 
 ## Setup
 
-`tests/conftest.py` starts like this:
-
-```python
-@pytest.fixture(scope="session")
-def app():
-    app = create_app("testing")
-    engine = app.extensions["db_engine"]
-    Base.metadata.drop_all(engine)
-    Base.metadata.create_all(engine)
-    yield app
-    Base.metadata.drop_all(engine)
-    engine.dispose()
-
-
-@pytest.fixture(autouse=True)
-def clean_state(app):
-    yield
-    with app.extensions["db_engine"].begin() as connection:
-        for table in reversed(Base.metadata.sorted_tables):
-            connection.execute(table.delete())
-    Redis.from_url(app.config["REDIS_URL"]).flushdb()
-
-
-@pytest.fixture
-def client(app):
-    return app.test_client()
+```
+tests/
+├── conftest.py      # shared by every test; empty for now
+├── unit/            # pure logic, no fixtures with I/O
+└── routes/
+    ├── conftest.py  # app, database, Redis and auth fixtures
+    ├── helpers.py   # request bodies and headers
+    └── test_*.py
 ```
 
-Tests delete their data afterwards instead of rolling back, because services call `commit()` and the concurrency tests need real commits across connections. It's also simple to follow. Sequences don't reset, so never assert a specific id or invoice number.
+The fixtures that touch PostgreSQL and Redis live in `tests/routes/conftest.py`, so `tests/unit` runs without Docker.
+
+- `app` (session): `create_app("testing")`. Refuses to run unless the database name ends in `_test`. Runs `drop_all` + `create_all` at the start, so an interrupted run never leaves old tables behind.
+- `redis_client` (session): the tests' own Redis client. Refuses db 0.
+- `clean_state` (autouse): deletes every table, children first, and flushes Redis **before** each test. Cleaning before instead of after means a crashed test can't leak data into the next one.
+
+Tests delete data instead of rolling back, because services call `commit()` and the concurrency tests need real commits across connections. `DELETE` instead of `TRUNCATE`, because `TRUNCATE` takes an `ACCESS EXCLUSIVE` lock and hangs if any connection is still open.
+
+Sequences reset once per run (`drop_all`), not between tests. Never assert a specific id or invoice number.
 
 `create_app("testing")` fails if `TEST_DATABASE_URL` is missing, so `drop_all` can't fall back to your development database. Don't point that variable at your development database either.
 
-Other fixtures you'll need:
+Fixtures:
 
 | Fixture | Gives you |
 |---|---|
+| `client` | Flask test client, new for each test |
+| `registered_user` | `data` from `POST /auth/register`: `user` plus tokens |
+| `db_session` | A session to check side effects the API doesn't show, like login history. Never use it to create data |
+| `redis_client` | Raw Redis client, for checking keys and TTLs |
 | `client_headers`, `other_client_headers` | `Authorization` header for a registered client |
 | `admin_headers` | Same, for a user whose role was changed to admin in the database |
 | `product` | A product with stock, created through the API |
@@ -89,6 +84,13 @@ Building data through the API makes tests slower but keeps them honest, since th
 ## Writing a test
 
 Name: `test_<action>_<condition>_<result>`.
+
+- Build bodies with `helpers.py` (`registration_body(**overrides)`) and override only the field the test is about. Use `example.com` emails and fake phone numbers.
+- Compare concrete values with `==` (lists, dicts, sets). `all()` or a computed bool shows `assert False` with no diff, and `all([])` is `True`.
+- Check response fields with an allowlist: `set(user) == PUBLIC_USER_FIELDS`. A blocklist like `"password_hash" not in user` misses fields you didn't think of.
+- Test limits at one past the boundary: 7-character password, 21-character phone.
+- Don't assert that two tokens differ. `iat` and `exp` are in seconds, so two tokens issued in the same second are identical.
+- Don't assert on timing. The login timing equalizer is covered by code review, not tests.
 
 Check the result and not only the status. Error tests check `status`, `detail`, and that nothing changed:
 
