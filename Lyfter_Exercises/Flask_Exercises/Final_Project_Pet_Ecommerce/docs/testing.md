@@ -73,8 +73,9 @@ Fixtures:
 | `registered_user` | `data` from `POST /auth/register`: `user` plus tokens |
 | `db_session` | A session to check side effects the API doesn't show, like login history. Never use it to create data |
 | `redis_client` | Raw Redis client, for checking keys and TTLs |
-| `client_headers`, `other_client_headers` | `Authorization` header for a registered client |
-| `admin_headers` | Same, for a user whose role was changed to admin in the database |
+| `other_user` | A second registered client, Bob. Use it for "someone else's" cases |
+| `admin_user` | A registered user promoted with `flask promote-admin`, the same way the first admin is created in production. Its `user.role` still says `client`, because the data was captured before the promotion |
+| `client_headers`, `other_client_headers`, `admin_headers` | `Authorization` header for `registered_user`, `other_user` and `admin_user` |
 | `product` | A product with stock, created through the API |
 | `pending_cart` | A cart with one item |
 | `paid_invoice` | An invoice created through a real checkout |
@@ -139,6 +140,9 @@ For the concurrency tests, start several `threading.Thread`, each calling the en
 |---|---|
 | Admin creates a user with a role | 201 |
 | Admin changes a role | Applies on the user's next request |
+| Client reads or updates their own account | 200, change saved |
+| Client reads or updates another user | 404, same `detail` as an unknown id, nothing changed |
+| Client deletes their own account | 403 |
 | Delete a user with no history | 204 |
 | Delete a user with invoices | 409 |
 

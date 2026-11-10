@@ -32,8 +32,9 @@ Own = allowed only on your own data. Someone else's returns 404.
 |---|---|---|
 | `POST /auth/register`, `/login`, `/refresh-token` | Public | Public |
 | `GET /auth/me`, `POST /auth/logout` | Yes | Yes |
-| `GET /users`, `GET /users/{id}` | Yes | No |
-| `POST /users`, `PATCH /users/{id}`, `DELETE /users/{id}` | Yes | No |
+| `GET /users` | Yes | No |
+| `GET /users/{id}`, `PATCH /users/{id}` | All | Own |
+| `POST /users`, `DELETE /users/{id}` | Yes | No |
 | `GET /login-history` | Yes | No |
 | `GET /products`, `GET /products/{id}` | Yes | Yes |
 | `POST /products`, `PATCH`, `DELETE`, `PATCH .../restock` | Yes | No |
@@ -45,7 +46,7 @@ Own = allowed only on your own data. Someone else's returns 404.
 | `POST /invoices/{number}/returns` | Yes | No |
 | `GET /invoices/{number}/returns` | All | Own |
 
-Clients can't read `/users` because it has other people's personal data. They read their own account at `/auth/me`.
+Clients can't list `/users` because it has other people's personal data. They read and update their own account at `/users/{id}`; someone else's id returns 404, the same as an id that doesn't exist. `/auth/me` also returns their account. Only admins delete users.
 
 An admin changing someone else's cart gets 403, not 404, because admins can see every cart.
 

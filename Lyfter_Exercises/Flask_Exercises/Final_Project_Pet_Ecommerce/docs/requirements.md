@@ -66,8 +66,8 @@
 
 | ID | Requirement | Status |
 |---|---|---|
-| TEST-01 | Unit tests with good coverage. | In progress: passwords, auth |
-| TEST-02 | Success and error cases, including messages. | In progress: auth |
+| TEST-01 | Unit tests with good coverage. | In progress: passwords, auth, permissions |
+| TEST-02 | Success and error cases, including messages. | In progress: auth, permissions, own account |
 | TEST-03 | A script runs the tests and writes a short report. | Missing ⏳ |
 | TEST-04 | Documented steps to run the tests. | Done: ✔ [testing.md](testing.md) |
 

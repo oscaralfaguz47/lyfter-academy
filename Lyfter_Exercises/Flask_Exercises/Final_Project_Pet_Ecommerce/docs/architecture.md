@@ -34,7 +34,7 @@ Follow these in new modules. All of them are already in the code.
 - Requests go through `parse(Schema, data)`. Responses go through `ok()`, `created()` or `no_content()`.
 - Input schemas extend `InputSchema`, which rejects unknown fields. Read schemas extend `ReadSchema`.
 - Business errors are `DomainError` subclasses. `app/errors/handlers.py` is the only place that maps them to HTTP.
-- Each repository has a map from constraint name to domain error, like `CONSTRAINT_ERRORS` in `contact_repository.py`.
+- Each repository has a map from constraint name to domain error, like `CONSTRAINT_ERRORS` in `invoice_repository.py`.
 - Money is `Decimal` and `Numeric(10, 2)`. Quantities are `Numeric(12, 3)`, since some products sell by weight. Never use `float`.
 
 ## How a request is checked
@@ -42,7 +42,7 @@ Follow these in new modules. All of them are already in the code.
 1. `login_required` or `permission_required` verifies the JWT and loads the user. Otherwise it returns 401.
 2. If the token's `ver` doesn't match `user.token_version`, it also returns 401. This is how logout revokes tokens.
 3. `permission_required` looks up the user's role in `ROLE_PERMISSIONS`. If the permission is missing, it returns 403.
-4. The service checks ownership. Someone else's cart or invoice returns 404, so the API doesn't reveal that it exists.
+4. The service checks ownership. Someone else's cart, invoice or user account returns 404, so the API doesn't reveal that it exists.
 
 The role is read from the database on every request, not from the token, so role changes apply right away.
 
