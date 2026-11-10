@@ -56,7 +56,7 @@ class UserService:
 
     def _ensure_can_access(self, actor: Actor, user_id: int, permission: Permission) -> None:
         if not actor.can_access_user(user_id, permission):
-            raise ForbiddenError("You don't have permission to perform this action.")
+            raise NotFoundError(f"User {user_id} not found.")
 
     def _get_or_404(self, user_id: int) -> User:
         user = self._repository.get_by_id(user_id)

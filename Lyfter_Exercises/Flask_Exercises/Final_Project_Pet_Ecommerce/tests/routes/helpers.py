@@ -3,6 +3,9 @@
 EMAIL = "oscar.alfaro@example.com"
 PASSWORD = "correct-pass-4557Abc$"
 
+OTHER_EMAIL = "emilio@example.com"
+ADMIN_EMAIL = "user-admin@example.com"
+
 def registration_body(**overrides: object) -> dict[str, object]:
     return {
         "name": "Oscar Alfaro Client",

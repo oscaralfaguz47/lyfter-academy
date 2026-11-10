@@ -6,7 +6,7 @@ from app.schemas.user import UserRead, UserUpdate, UserListParams
 from app.schemas.validation import parse
 from app.services.user_service import UserService
 from app.routes.responses import serialize, ok, no_content, pagination_meta, serialize_many
-from app.auth import permission_required
+from app.auth import permission_required, login_required
 from app.security.permissions import Permission
 from app.auth import current_actor
 
@@ -27,13 +27,13 @@ def list_users():
     return ok(serialize_many(UserRead, users), meta=meta)
 
 @users_bp.get("/<int:user_id>")
-@permission_required(Permission.USERS_READ)
+@login_required
 def get_user(user_id: int):
     user = _user_service().get_user(current_actor(), user_id)
     return ok(serialize(UserRead, user))
 
 @users_bp.patch("/<int:user_id>")
-@permission_required(Permission.USERS_UPDATE)
+@login_required
 def update_user(user_id: int):
     data = parse(UserUpdate, request.get_json())
     user = _user_service().update_user(current_actor(), user_id, data)

@@ -21,7 +21,7 @@ class Permission(StrEnum):
 
 ROLE_PERMISSIONS: dict[UserRole, frozenset[Permission]] = {
     UserRole.ADMIN: frozenset(Permission),
-    UserRole.CLIENT: frozenset(),
+    UserRole.CLIENT: frozenset({Permission.PRODUCTS_READ}),
 }
 
 @dataclass(frozen=True)
