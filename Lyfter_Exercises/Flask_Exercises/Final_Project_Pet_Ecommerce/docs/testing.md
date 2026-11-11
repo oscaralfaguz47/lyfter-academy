@@ -138,8 +138,8 @@ For the concurrency tests, start several `threading.Thread`, each calling the en
 
 | Case | Expected |
 |---|---|
-| Admin creates a user with a role | 201 |
-| Admin changes a role | Applies on the user's next request |
+| User promoted with `flask promote-admin` | Admin access on the next request, with the same token |
+| Client or admin sends `role` in `PATCH /users/{id}` | 422, role unchanged |
 | Client reads or updates their own account | 200, change saved |
 | Client reads or updates another user | 404, same `detail` as an unknown id, nothing changed |
 | Client deletes their own account | 403 |

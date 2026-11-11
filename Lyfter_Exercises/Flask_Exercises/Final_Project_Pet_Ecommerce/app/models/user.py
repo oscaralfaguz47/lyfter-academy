@@ -8,7 +8,6 @@ from app.security.permissions import UserRole
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from app.models.contact import Contact
     from app.models.login_history import LoginHistory
     from app.models.invoice import Invoice
     from app.models.cart import Cart

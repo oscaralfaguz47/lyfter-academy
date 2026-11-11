@@ -138,7 +138,7 @@ These aren't duplicated data in the normalization sense. Each one records a fact
 | `SET NULL` | `login_history.user_id` | The audit log stays even if the user is deleted. |
 | `RESTRICT` | Every other FK | Sales, returns and audit columns are history. Deleting their user or product returns 409. |
 
-`USER_REFERENCING_CONSTRAINTS` in `user_repository.py` must list every `RESTRICT` FK to `users`: `fk_products_created_by_id_users`, `fk_products_updated_by_id_users`, `fk_invoices_client_id_users`, `fk_invoices_created_by_id_users`, `fk_invoices_updated_by_id_users` and `fk_invoice_returns_created_by_id_users`. Keep `fk_contacts_user_id_users` until the contacts module is deleted, and change the error message so it doesn't only mention contacts.
+`USER_REFERENCING_CONSTRAINTS` in `user_repository.py` must list every `RESTRICT` FK to `users`. Deleting a user that one of them still references returns 409 instead of 500. Today they are `fk_products_created_by_id_users`, `fk_products_updated_by_id_users`, `fk_invoices_client_id_users`, `fk_invoices_created_by_id_users` and `fk_invoices_updated_by_id_users`. Add `fk_invoice_returns_created_by_id_users` when the `invoice_returns` table is implemented. `carts.user_id` (`CASCADE`) and `login_history.user_id` (`SET NULL`) never block a delete, so they don't belong in the list.
 
 
 ## Entity-relationship diagram

@@ -49,7 +49,7 @@
 | ID | Requirement | Status |
 |---|---|---|
 | API-01 | Read, create, update and delete endpoints for each relevant entity. Junction tables don't need them. | Partial ⏳. Invoices have no delete on purpose, see [ADR-0005](adr/0005-invoice-snapshots-and-restricted-deletes.md) |
-| API-02 | Only admins create, update or delete products, users and invoices. | Partial: ⏳ invoice update is missing. Invoices are cancelled with a return instead of a delete ([ADR-0005](adr/0005-invoice-snapshots-and-restricted-deletes.md)). Clients create invoices only through checkout, which is a sale (API-03) |
+| API-02 | Only admins create, update or delete products and invoices, and update or delete any user. Users are created only through registration (AUTH-01); admins are promoted with `flask promote-admin`. | Partial: ⏳ invoice update is missing. Invoices are cancelled with a return instead of a delete ([ADR-0005](adr/0005-invoice-snapshots-and-restricted-deletes.md)). Clients create invoices only through checkout, which is a sale (API-03) |
 | API-03 | Clients can use read endpoints, sales and carts. | Partial ⏳ |
 
 

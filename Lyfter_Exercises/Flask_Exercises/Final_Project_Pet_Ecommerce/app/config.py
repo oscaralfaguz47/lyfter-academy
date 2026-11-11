@@ -1,8 +1,20 @@
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
 
 load_dotenv()
+
+
+# app/config.py -> app/ -> project root
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+def _project_path(value: str | None) -> str:
+    """ Resolve a relative path against the project root instead of the current directory. """
+    if not value:
+        return value
+    return str(PROJECT_ROOT / value)
+
 
 class Config:
     # Setting shared by every environment
@@ -12,8 +24,8 @@ class Config:
     REDIS_URL = os.environ.get("REDIS_URL")
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
     MAX_CONTENT_LENGTH = 1 * 1024 * 1024 # 1 MB, bigger bodies get 413
-    JWT_PRIVATE_KEY_PATH = os.environ.get("JWT_PRIVATE_KEY_PATH")
-    JWT_PUBLIC_KEY_PATH = os.environ.get("JWT_PUBLIC_KEY_PATH")
+    JWT_PRIVATE_KEY_PATH = _project_path(os.environ.get("JWT_PRIVATE_KEY_PATH"))
+    JWT_PUBLIC_KEY_PATH = _project_path(os.environ.get("JWT_PUBLIC_KEY_PATH"))
     JWT_ACCESS_TOKEN_MINUTES = int(os.environ.get("JWT_ACCESS_TOKEN_MINUTES", "15"))
     JWT_REFRESH_TOKEN_DAYS = int(os.environ.get("JWT_REFRESH_TOKEN_DAYS", "7"))
 
@@ -41,4 +53,5 @@ def get_config(name:str | None = None) -> type[Config]:
     try:
         return CONFIGS[name]
     except KeyError:
-        raise ValueError(f"Unknown APP_ENV '{name}'. Use one of. {list(CONFIGS)}") from None
+        raise ValueError(f"Unknown APP_ENV '{name}'. Use one of... {list(CONFIGS)}") from None
+

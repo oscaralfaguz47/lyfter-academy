@@ -14,7 +14,7 @@ UserName: TypeAlias = Annotated[str, Field(min_length=1, max_length=100)]
 PhoneNumber: TypeAlias = Annotated[str, Field(min_length=1, max_length=20)]
 
 class UserCreate(BaseModel):
-    """ Body of POST /users """
+    """ Fields shared by every way of creating a user, Base of RegisterRequest.  """
 
     # extra="forbid": unknown fields are rejected
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
@@ -32,7 +32,7 @@ class UserUpdate(BaseModel):
     phone_number: PhoneNumber | None = None
     email: NormalizedEmail | None = None
 
-    @field_validator("name", "email")
+    @field_validator("name", "email", "phone_number")
     @classmethod
     def reject_null(cls, value: str | None) -> str:
         if value is None:

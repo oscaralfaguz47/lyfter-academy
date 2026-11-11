@@ -34,7 +34,7 @@ Own = allowed only on your own data. Someone else's returns 404.
 | `GET /auth/me`, `POST /auth/logout` | Yes | Yes |
 | `GET /users` | Yes | No |
 | `GET /users/{id}`, `PATCH /users/{id}` | All | Own |
-| `POST /users`, `DELETE /users/{id}` | Yes | No |
+| `DELETE /users/{id}` | Yes | No |
 | `GET /login-history` | Yes | No |
 | `GET /products`, `GET /products/{id}` | Yes | Yes |
 | `POST /products`, `PATCH`, `DELETE`, `PATCH .../restock` | Yes | No |
@@ -47,6 +47,8 @@ Own = allowed only on your own data. Someone else's returns 404.
 | `GET /invoices/{number}/returns` | All | Own |
 
 Clients can't list `/users` because it has other people's personal data. They read and update their own account at `/users/{id}`; someone else's id returns 404, the same as an id that doesn't exist. `/auth/me` also returns their account. Only admins delete users.
+
+New accounts are always clients. The API can't change a role: a `role` field in `PATCH /users/{id}` returns 422, even for admins. Only the server operator promotes a user, with `flask promote-admin <email>`.
 
 An admin changing someone else's cart gets 403, not 404, because admins can see every cart.
 
@@ -80,8 +82,7 @@ A `role` field on register returns 422. A wrong password and an unknown email re
 |---|---|---|---|
 | `GET /users` | `sort`: `id`, `-id`, `name`, `-name` | 200 list | |
 | `GET /users/{id}` | | 200 | 404 |
-| `POST /users` | `name`, `email`, `phone_number`, `password`, `role` | 201 | 409, 422 |
-| `PATCH /users/{id}` | any of `name`, `email`, `phone_number`, `role` | 200 | 404, 409, 422 |
+| `PATCH /users/{id}` | any of `name`, `email`, `phone_number` | 200 | 404, 409, 422 |
 | `DELETE /users/{id}` | | 204 | 404, 409 if the user has invoices or products |
 
 ## Login history

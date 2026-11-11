@@ -10,11 +10,11 @@ from redis import Redis
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 
-from app import create_app, models
+from app import create_app, models # It is to ensure that all tablas are registered in Base.metadata before the create_all.
 from app.database import Base
-from tests.routes.helpers import registration_body, ADMIN_EMAIL, OTHER_EMAIL, bearer, registration_body
+from tests.routes.helpers import registration_body, ADMIN_EMAIL, OTHER_EMAIL, bearer
 
-
+# We create the app here for testing
 @pytest.fixture(scope="session")
 def app() -> Iterator[Flask]:
     app = create_app("testing")
@@ -27,6 +27,7 @@ def app() -> Iterator[Flask]:
     Base.metadata.drop_all(engine)
     engine.dispose()
 
+# Connect to Redis and refuse db
 @pytest.fixture(scope="session")
 def redis_client(app: Flask) -> Iterator[Redis]:
     client = Redis.from_url(app.config["REDIS_URL"], decode_responses=True)
@@ -34,12 +35,14 @@ def redis_client(app: Flask) -> Iterator[Redis]:
     yield client
     client.close()
 
+# DELETE of all the rows in the tables + flushdb
 @pytest.fixture(autouse=True)
 def clean_state(app: Flask, redis_client: Redis) -> None:
     with app.extensions["db_engine"].begin() as connection:
         for table in reversed(Base.metadata.sorted_tables):
             connection.execute(table.delete())
     redis_client.flushdb()
+
 
 @pytest.fixture
 def client(app: Flask) -> FlaskClient:
@@ -64,7 +67,7 @@ def other_client_headers(other_user: dict) -> dict[str, str]:
 @pytest.fixture
 def admin_user(app: Flask, client: FlaskClient) -> dict:
     user = _register(client, name="Maria Admin", email=ADMIN_EMAIL)
-    result =app.test_cli_runner().invoke(args=["promote-admin", ADMIN_EMAIL])
+    result = app.test_cli_runner().invoke(args=["promote-admin", ADMIN_EMAIL])
     assert result.exit_code == 0, result.output
     return user
 
