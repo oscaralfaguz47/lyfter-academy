@@ -1,4 +1,4 @@
-from pydantic import Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator, PlainSerializer
 from typing import Annotated, TypeAlias, Literal, Self
 from decimal import Decimal
 from datetime import datetime, date
@@ -6,11 +6,13 @@ from datetime import datetime, date
 from app.schemas.input_schema import InputSchema
 from app.schemas.pagination import PaginationParams
 from app.schemas.read_schema import ReadSchema
+from app.schemas.types import Money, Quantity
 
 
 ProductName : TypeAlias = Annotated[str, Field(min_length=1, max_length=30)]
 Price: TypeAlias = Annotated[Decimal, Field(gt=0, max_digits=10, decimal_places=2)]
 Stock: TypeAlias = Annotated[Decimal, Field(gt=0, max_digits=12, decimal_places=3)]
+
 
 class ProductCreate(InputSchema):
 
@@ -27,8 +29,8 @@ class ProductListParams(PaginationParams):
 class ProductRead(ReadSchema):
     id: int
     name: str
-    price: Decimal
-    stock: Decimal
+    price: Money
+    stock: Quantity
     entry_date: date 
     created_by_id: int
     updated_by_id: int | None

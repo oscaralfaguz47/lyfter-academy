@@ -1,10 +1,12 @@
-""" Builders shared by route tests. Each test overrides only the field it cares about. """
+""" Builders and constants for user and auth route tests. """
 
 EMAIL = "oscar.alfaro@example.com"
 PASSWORD = "correct-pass-4557Abc$"
 
 OTHER_EMAIL = "emilio@example.com"
 ADMIN_EMAIL = "user-admin@example.com"
+
+PUBLIC_USER_FIELDS = {"id", "name", "phone_number", "email", "created_at", "updated_at", "role"}
 
 def registration_body(**overrides: object) -> dict[str, object]:
     return {

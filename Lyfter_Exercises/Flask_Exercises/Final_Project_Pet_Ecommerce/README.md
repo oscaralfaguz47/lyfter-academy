@@ -61,3 +61,17 @@ docker start redis-cache
 ```
 docker exec -it redis-cache redis-cli MONITOR
 ```
+
+## Commands to execute tests
+1. Run all existing tests
+```
+pytest -v
+```
+2. Run tests for a specific file
+```
+pytest tests/<routes or unit>/<name of the file>
+```
+3. Run a specific test
+```
+pytest tests/<routes or unit>/<name of the file>::<name of the test>
+```

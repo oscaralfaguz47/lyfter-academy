@@ -4,6 +4,7 @@ import pytest
 from flask.testing import FlaskClient
 
 from app.security.permissions import ROLE_PERMISSIONS, UserRole
+from tests.routes.helpers.users import PUBLIC_USER_FIELDS 
 
 FORBIDDEN_DETAIL = "You don't have permission to perform this action."
 
@@ -36,11 +37,13 @@ def test_me_for_admin_returns_admin_role_and_its_permissions(client: FlaskClient
     data = client.get("/api/v1/auth/me", headers=admin_headers).get_json()["data"]
     assert data["role"] == "admin"
     assert data["permissions"] == sorted(ROLE_PERMISSIONS[UserRole.ADMIN])
+    assert set(data) == PUBLIC_USER_FIELDS | {"permissions"}
 
 def test_me_for_client_returns_client_role_and_its_permissions(client: FlaskClient, client_headers: dict) -> None:
     data = client.get("/api/v1/auth/me", headers=client_headers).get_json()["data"]
     assert data["role"] == "client"
     assert data["permissions"] == sorted(ROLE_PERMISSIONS[UserRole.CLIENT])
+    assert set(data) == PUBLIC_USER_FIELDS | {"permissions"}
 
 def test_client_can_list_products(client: FlaskClient, client_headers: dict) -> None:
     response = client.get("/api/v1/products", headers=client_headers)

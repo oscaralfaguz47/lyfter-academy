@@ -6,24 +6,26 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models import LoginHistory
-from tests.routes.helpers import login_body
+from tests.routes.helpers.users import login_body, PUBLIC_USER_FIELDS
 
 USERS_URL = "/api/v1/users"
 LOGIN_URL = "/api/v1/auth/login"
 
 # ---------- OWN ACCOUNT AS CLIENT ----------
 
-def test_get_own_user_as_client_returns_200(client: FlaskClient, registered_user: dict, client_headers: dict) -> None:
+def test_get_own_user_as_client_returns_200_with_own_account(client: FlaskClient, registered_user: dict, client_headers: dict) -> None:
     user_id = registered_user["user"]["id"]
     response = client.get(f"{USERS_URL}/{user_id}", headers=client_headers)
     assert response.status_code == HTTPStatus.OK    
-    assert response.get_json()["data"]["id"] == user_id
+    assert response.get_json()["data"] == registered_user["user"]
 
 def test_update_own_user_as_client_returns_200_and_saves(client: FlaskClient, registered_user: dict, client_headers: dict) -> None:
     url = f"{USERS_URL}/{registered_user["user"]["id"]}"
     response = client.patch(url, json={"phone_number": "+506 2222-4444"}, headers=client_headers)
+    data = response.get_json()["data"]
     assert response.status_code == HTTPStatus.OK
-    assert response.get_json()["data"]["phone_number"] == "+506 2222-4444"
+    assert set(data) == PUBLIC_USER_FIELDS
+    assert data["phone_number"] == "+506 2222-4444"
     assert client.get(url, headers=client_headers).get_json()["data"]["phone_number"] == "+506 2222-4444"
 
 @pytest.mark.parametrize("method", ["GET", "PATCH"])

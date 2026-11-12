@@ -45,15 +45,24 @@ The assignment asks for tests of the API, and most of the risk is in rules Postg
 
 ```
 tests/
-├── conftest.py      # shared by every test; empty for now
-├── unit/            # pure logic, no fixtures with I/O
+├── conftest.py          # pytest_plugins: registers the modules in routes/fixtures/
+├── unit/                # pure logic, no fixtures with I/O
 └── routes/
-    ├── conftest.py  # app, database, Redis and auth fixtures
-    ├── helpers.py   # request bodies and headers
+    ├── conftest.py      # infrastructure: app, redis_client, clean_state, client, db_session
+    ├── fixtures/        # data fixtures, one module per area
+    │   ├── users.py     # registered_user, other_user, admin_user and their headers
+    │   └── products.py  # product
+    ├── helpers/         # plain functions and constants, imported explicitly
+    │   ├── users.py     # registration_body, login_body, bearer, test emails
+    │   └── products.py  # product_body
     └── test_*.py
 ```
 
 The fixtures that touch PostgreSQL and Redis live in `tests/routes/conftest.py`, so `tests/unit` runs without Docker.
+
+The data fixtures live in `tests/routes/fixtures/` and are registered with `pytest_plugins` in `tests/conftest.py`. Pytest only accepts `pytest_plugins` in the top-level conftest, because a plugin applies to the whole run. So `tests/unit` can see these fixtures too, but can't use them: they need `client`, which only exists under `tests/routes`. Modules in `fixtures/` are imported on every run, so they only define functions and do nothing at import time.
+
+Where a fixture goes: in the test file if only that file uses it, in `fixtures/<area>.py` if several route files do, and in `tests/routes/conftest.py` only if it's infrastructure. A new module in `fixtures/` must be added to `pytest_plugins`.
 
 - `app` (session): `create_app("testing")`. Refuses to run unless the database name ends in `_test`. Runs `drop_all` + `create_all` at the start, so an interrupted run never leaves old tables behind.
 - `redis_client` (session): the tests' own Redis client. Refuses db 0.
@@ -73,12 +82,11 @@ Fixtures:
 | `registered_user` | `data` from `POST /auth/register`: `user` plus tokens |
 | `db_session` | A session to check side effects the API doesn't show, like login history. Never use it to create data |
 | `redis_client` | Raw Redis client, for checking keys and TTLs |
-| `other_user` | A second registered client, Bob. Use it for "someone else's" cases |
+| `other_user` | A second registered client. Use it for "someone else's" cases |
 | `admin_user` | A registered user promoted with `flask promote-admin`, the same way the first admin is created in production. Its `user.role` still says `client`, because the data was captured before the promotion |
 | `client_headers`, `other_client_headers`, `admin_headers` | `Authorization` header for `registered_user`, `other_user` and `admin_user` |
-| `product` | A product with stock, created through the API |
-| `pending_cart` | A cart with one item |
-| `paid_invoice` | An invoice created through a real checkout |
+| `product` | A product created by `admin_user` through the API, from `product_body()`. Stock starts at 0 |
+| `paid_invoice` | Planned: an invoice created through a real purchase |
 
 Building data through the API makes tests slower but keeps them honest, since they follow what a real client does.
 
@@ -86,7 +94,7 @@ Building data through the API makes tests slower but keeps them honest, since th
 
 Name: `test_<action>_<condition>_<result>`.
 
-- Build bodies with `helpers.py` (`registration_body(**overrides)`) and override only the field the test is about. Use `example.com` emails and fake phone numbers.
+- Build bodies with the builders in `helpers/` (`registration_body(**overrides)`, `product_body(**overrides)`) and override only the field the test is about. Import them from their module, like `from tests.routes.helpers.users import registration_body`. Use `example.com` emails and fake phone numbers.
 - Compare concrete values with `==` (lists, dicts, sets). `all()` or a computed bool shows `assert False` with no diff, and `all([])` is `True`.
 - Check response fields with an allowlist: `set(user) == PUBLIC_USER_FIELDS`. A blocklist like `"password_hash" not in user` misses fields you didn't think of.
 - Test limits at one past the boundary: 7-character password, 21-character phone.

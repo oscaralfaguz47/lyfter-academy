@@ -12,7 +12,8 @@ from sqlalchemy.orm import Session
 
 from app import create_app, models # It is to ensure that all tablas are registered in Base.metadata before the create_all.
 from app.database import Base
-from tests.routes.helpers import registration_body, ADMIN_EMAIL, OTHER_EMAIL, bearer
+
+# ---------- INFRASTRUCTURE ----------
 
 # We create the app here for testing
 @pytest.fixture(scope="session")
@@ -43,37 +44,9 @@ def clean_state(app: Flask, redis_client: Redis) -> None:
             connection.execute(table.delete())
     redis_client.flushdb()
 
-
 @pytest.fixture
 def client(app: Flask) -> FlaskClient:
     return app.test_client()
-
-@pytest.fixture
-def registered_user(client: FlaskClient) -> dict:
-    return _register(client)
-
-@pytest.fixture
-def client_headers(registered_user: dict) -> dict[str, str]:
-    return bearer(registered_user["access_token"])
-
-@pytest.fixture
-def other_user(client: FlaskClient) -> dict:
-    return _register(client, name="Emilio Client", email=OTHER_EMAIL)
-
-@pytest.fixture
-def other_client_headers(other_user: dict) -> dict[str, str]:
-    return bearer(other_user["access_token"])
-
-@pytest.fixture
-def admin_user(app: Flask, client: FlaskClient) -> dict:
-    user = _register(client, name="Maria Admin", email=ADMIN_EMAIL)
-    result = app.test_cli_runner().invoke(args=["promote-admin", ADMIN_EMAIL])
-    assert result.exit_code == 0, result.output
-    return user
-
-@pytest.fixture
-def admin_headers(admin_user: dict) -> dict[str, str]:
-    return bearer(admin_user["access_token"])
 
 @pytest.fixture
 def db_session(app: Flask) -> Iterator[Session]:
@@ -82,10 +55,6 @@ def db_session(app: Flask) -> Iterator[Session]:
     session.close()
 
 
-def _register(client: FlaskClient, **overrides: object) -> dict:
-    response = client.post("/api/v1/auth/register", json=registration_body(**overrides))
-    assert response.status_code == HTTPStatus.CREATED, response.get_json()
-    return response.get_json()["data"]
 
 def _ensure_test_database(engine: Engine) -> None:
     name = engine.url.database or ""

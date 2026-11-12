@@ -12,12 +12,11 @@ from sqlalchemy.orm import Session
 
 
 from app.models import LoginHistory
-from tests.routes.helpers import EMAIL, bearer, registration_body, login_body
+from tests.routes.helpers.users import EMAIL, bearer, registration_body, login_body, PUBLIC_USER_FIELDS
 from app.security.tokens import TokenService
 
 REGISTER_URL = "api/v1/auth/register"
 ME_URL = "api/v1/auth/me"
-PUBLIC_USER_FIELDS = {"id", "name", "phone_number", "email", "created_at", "updated_at", "role"}
 
 LOGIN_URL = "/api/v1/auth/login"
 TOKEN_FIELDS = {"access_token", "refresh_token", "token_type", "expires_in"}
