@@ -1,14 +1,16 @@
 
-from sqlalchemy import ForeignKey, Enum
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from typing import TYPE_CHECKING
 from enum import StrEnum
+
+from sqlalchemy import ForeignKey, Enum, Index, text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
 from app.models.mixins import TimesTampMixin
 
-from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from app.models.user import User
+    from app.models.cart_item import CartItem
 
 
 class CartStatus(StrEnum):
@@ -17,6 +19,10 @@ class CartStatus(StrEnum):
 
 class Cart(TimesTampMixin, Base):
     __tablename__ = "carts"
+    __table_args__ = (
+        # Unique Index constraint to allow only one 'pending' cart per user
+        Index("uq_carts_user_id_pending", "user_id", unique=True, postgresql_where=text(f"status = '{CartStatus.PENDING.value}'")),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
@@ -34,4 +40,7 @@ class Cart(TimesTampMixin, Base):
     )
 
     # FK Relationships
-    user: Mapped["User"] = relationship(back_populates="carts", foreign_keys=[user_id])
+    user: Mapped["User"] = relationship(back_populates="carts", foreign_keys=[user_id], lazy="raise")
+
+    # Relationship with many
+    cart_items: Mapped[list["CartItem"]] = relationship(back_populates="cart", cascade="all, delete-orphan", passive_deletes=True, lazy="raise")

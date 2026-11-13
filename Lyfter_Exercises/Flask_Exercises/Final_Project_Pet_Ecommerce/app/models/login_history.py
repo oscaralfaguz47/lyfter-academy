@@ -18,4 +18,4 @@ class LoginHistory(Base):
     success: Mapped[bool]
 
     # Relationship with users
-    user: Mapped["User | None"] = relationship(back_populates="login_history", foreign_keys=[user_id])
+    user: Mapped["User | None"] = relationship(back_populates="login_history", foreign_keys=[user_id], lazy="raise")

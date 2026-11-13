@@ -1,7 +1,9 @@
 from sqlalchemy.orm import Session
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal
 from collections.abc import Sequence
 from app.errors.exceptions import ConflictError, ValidationError, NotFoundError
+
+from app.domain.pricing import line_total
 
 import logging
 logger = logging.getLogger(__name__)
@@ -15,8 +17,6 @@ from app.security.permissions import Actor, Permission
 from app.models.invoice import Invoice
 from app.models.invoice_line import InvoiceLine
 from app.models.product import Product
-
-CENTS = Decimal("0.01")
 
 
 class PurchaseService:
@@ -43,11 +43,11 @@ class PurchaseService:
         invoice = Invoice(client_id=actor.id, total_amount=Decimal(0), created_by_id=actor.id)
         for product in products:
             quantity = quantities[product.id]
-            line_total = (product.price * quantity).quantize(CENTS, rounding=ROUND_HALF_UP)
+            line_total_amount = line_total(product.price, quantity)
             invoice.invoice_lines.append(
-                InvoiceLine(product_id=product.id, quantity=quantity, price=product.price, total_amount=line_total)
+                InvoiceLine(product_id=product.id, quantity=quantity, price=product.price, total_amount=line_total_amount)
             )
-            invoice.total_amount += line_total
+            invoice.total_amount += line_total_amount
             product.stock -= quantity
         # One commit for everything, invoice, invoice_lines and product.stock
         self._invoice_repository.add(invoice)

@@ -46,7 +46,7 @@ PostgreSQL through SQLAlchemy.
 |Name | Type | Details | Constraint| Index
 |---|---|---|---|---|
 | id | int | | "pk_carts"
-| user_id |  int | | "fk_carts_user_id_users" | carts.user_id
+| user_id |  int | | "fk_carts_user_id_users", "uq_carts_user_id_pending" | carts.user_id
 | status | varchar(10) | "pending or completed" | "ck_carts_status_valid"
 | created_at |  timestamptz | server_default=func.now()  
 | updated_at | timestamptz | server_default=func.now() 

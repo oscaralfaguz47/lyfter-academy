@@ -30,8 +30,6 @@ class User(TimesTampMixin, Base):
     token_version: Mapped[int] = mapped_column(default=0, server_default="0")
 
     # Relationship with many
-    login_history: Mapped[list["LoginHistory"]] = relationship(back_populates="user", passive_deletes="all")
-    invoices: Mapped[list["Invoice"]] = relationship(back_populates="user_client", foreign_keys="Invoice.client_id", passive_deletes="all")
-    carts: Mapped[list["Cart"]] = relationship(back_populates="user", foreign_keys="Cart.user_id", passive_deletes="all")
-
-
+    login_history: Mapped[list["LoginHistory"]] = relationship(back_populates="user", passive_deletes="all", lazy="raise")
+    invoices: Mapped[list["Invoice"]] = relationship(back_populates="user_client", foreign_keys="Invoice.client_id", passive_deletes="all", lazy="raise")
+    carts: Mapped[list["Cart"]] = relationship(back_populates="user", foreign_keys="Cart.user_id", passive_deletes="all", lazy="raise")

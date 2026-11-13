@@ -23,6 +23,6 @@ class InvoiceLine(Base):
     invoice_id: Mapped[int] = mapped_column(ForeignKey("invoices.id", ondelete="RESTRICT"), index=True)
 
     # Relationships with products
-    product: Mapped["Product"] = relationship(back_populates="invoice_lines")
+    product: Mapped["Product"] = relationship(back_populates="invoice_lines", lazy="raise")
     # Relationship with invoices
-    invoice : Mapped["Invoice"] = relationship(back_populates="invoice_lines")
+    invoice : Mapped["Invoice"] = relationship(back_populates="invoice_lines", lazy="raise")
