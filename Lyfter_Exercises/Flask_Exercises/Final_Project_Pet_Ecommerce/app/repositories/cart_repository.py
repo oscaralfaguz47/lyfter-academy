@@ -1,5 +1,9 @@
-from sqlalchemy import select
+from sqlalchemy import select, Executable
 from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.dialects.postgresql import insert
+
+from decimal import Decimal
 
 from app.models.cart import Cart, CartStatus
 from app.models.cart_item import CartItem
@@ -21,4 +25,39 @@ class CartRepository:
         )
         return self._session.scalar(query)
 
-    
+    def ensure_pending_cart_id(self, user_id: int) -> int:
+        """ Create the user's pending cart if it doesn't exist yet and returns its id. """
+        statement = (
+            insert(Cart)
+            .values(user_id=user_id, status=CartStatus.PENDING)
+            .on_conflict_do_nothing(
+                index_elements=[Cart.user_id],
+                index_where=Cart.status == CartStatus.PENDING,
+            )
+        )
+        self._session.execute(statement)
+        query = select(Cart.id).where(Cart.user_id == user_id, Cart.status == CartStatus.PENDING)
+        return self._session.scalars(query).one()
+
+    def upsert_item(self, cart_id: int, product_id: int, quantity: Decimal) -> None:
+        """ Set the quantity of a product, insert the line or overwrite it if it already exists. """
+        statement = insert(CartItem).values(cart_id=cart_id, product_id=product_id, quantity=quantity)
+        statement = statement.on_conflict_do_update(
+            index_elements=[CartItem.cart_id, CartItem.product_id],
+            set_={"quantity": statement.excluded.quantity},
+        )
+        self._execute(statement)
+
+    def _execute(self, statement: Executable) -> None:
+        try: 
+            self._session.execute(statement)
+        except IntegrityError as error:
+            mapped = CONSTRAINT_ERRORS.get(_violated_constraint(error))
+            if mapped is None:
+                raise
+            error_class, message = mapped
+            raise error_class(message) from error
+
+def _violated_constraint(error: IntegrityError) -> str | None:
+    diagnostics = getattr(error.orig, "diag", None)
+    return getattr(diagnostics, "constraint_name", None)
