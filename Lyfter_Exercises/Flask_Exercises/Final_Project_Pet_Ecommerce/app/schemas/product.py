@@ -1,23 +1,19 @@
 from pydantic import Field, field_validator, model_validator, PlainSerializer
-from typing import Annotated, TypeAlias, Literal, Self
-from decimal import Decimal
+from typing import Literal, Self, TypeAlias, Annotated
 from datetime import datetime, date
 
 from app.schemas.input_schema import InputSchema
 from app.schemas.pagination import PaginationParams
 from app.schemas.read_schema import ReadSchema
-from app.schemas.types import Money, Quantity
+from app.schemas.read_types import Money, Quantity
+from app.schemas.input_types import QuantityInput, PriceInput
 
-
-ProductName : TypeAlias = Annotated[str, Field(min_length=1, max_length=30)]
-Price: TypeAlias = Annotated[Decimal, Field(gt=0, max_digits=10, decimal_places=2)]
-Stock: TypeAlias = Annotated[Decimal, Field(gt=0, max_digits=12, decimal_places=3)]
-
+ProductNameInput: TypeAlias = Annotated[str, Field(min_length=1, max_length=30)]
 
 class ProductCreate(InputSchema):
 
-    name: ProductName
-    price: Price
+    name: ProductNameInput
+    price: PriceInput
     entry_date: date | None = None
 
 ProductSort = Literal["id"]
@@ -42,8 +38,8 @@ class ProductPage(ReadSchema):
     total: int
 
 class ProductUpdate(InputSchema):
-    name: ProductName | None = None
-    price: Price | None = None
+    name: ProductNameInput | None = None
+    price: PriceInput | None = None
     entry_date: date | None = None
 
     @field_validator("name", "price", "entry_date")
@@ -60,7 +56,7 @@ class ProductUpdate(InputSchema):
         return self
 
 class IncreaseProductStock(InputSchema):
-    stock: Stock | None = None
+    stock: QuantityInput | None = None
 
     @field_validator("stock")
     @classmethod

@@ -1,20 +1,20 @@
 from datetime import datetime
-from decimal import Decimal
-from typing import Annotated, Self, TypeAlias, Literal
+from typing import Annotated, Self, Literal
 from pydantic import Field, model_validator
 from pydantic_core import PydanticCustomError
 
 from app.schemas.input_schema import InputSchema
 from app.schemas.read_schema import ReadSchema
 from app.schemas.pagination import PaginationParams
+from app.schemas.read_types import Money, Quantity
+from app.schemas.input_types import QuantityInput
 
-Quantity: TypeAlias = Annotated[Decimal, Field(gt=0, max_digits=12, decimal_places=3)]
 MAX_ITEMS = 50
 
 
 class PurchaseItem(InputSchema):
     product_id: Annotated[int, Field(gt=0, strict=True)]
-    quantity: Quantity
+    quantity: QuantityInput
 
 class PurchaseRequest(InputSchema):
     items: Annotated[list[PurchaseItem], Field(min_length=1, max_length=MAX_ITEMS)]
@@ -28,15 +28,15 @@ class PurchaseRequest(InputSchema):
 
 class InvoiceLineRead(ReadSchema):
     product_id : int
-    quantity: Decimal
-    price: Decimal
-    total_amount: Decimal
+    quantity: Quantity
+    price: Money
+    total_amount: Money
 
 class InvoiceRead(ReadSchema):
     id: int
     invoice_number: int
     client_id: int
-    total_amount: Decimal
+    total_amount: Money
     created_at: datetime
     invoice_lines: list[InvoiceLineRead]
 

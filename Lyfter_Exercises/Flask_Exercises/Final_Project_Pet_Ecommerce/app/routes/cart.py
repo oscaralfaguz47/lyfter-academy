@@ -9,14 +9,14 @@ from app.routes.responses import ok, serialize
 from app.schemas.cart import CartRead
 
 
-carts_bp = Blueprint("cart", __name__, url_prefix="/api/v1/cart")
+cart_bp = Blueprint("cart", __name__, url_prefix="/api/v1/cart")
 
-def _cart_service():
+def _cart_service() -> CartService:
     session = get_session()
     return CartService(session, CartRepository(session))
 
 
-@carts_bp.get("")
+@cart_bp.get("")
 @login_required
 def get_cart():
     cart = _cart_service().get_cart(current_user_id())

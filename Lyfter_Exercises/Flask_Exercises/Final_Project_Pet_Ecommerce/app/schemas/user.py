@@ -1,17 +1,16 @@
 """ Shapes the user data that enters and leaves the API """
 
 from datetime import datetime
-from typing import Annotated, TypeAlias, Literal
+from typing import Literal, TypeAlias, Annotated
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, AfterValidator, model_validator, computed_field
+from pydantic import BaseModel, ConfigDict, field_validator, model_validator, computed_field, Field
 
 from app.schemas.pagination import PaginationParams
+from app.schemas.input_types import PhoneNumberInput, NormalizedEmailInput
 from app.security.permissions import UserRole, Permission, ROLE_PERMISSIONS
 
-# Reusable type, a valid email and lowercased
-NormalizedEmail: TypeAlias = Annotated[EmailStr, AfterValidator(str.lower), Field(max_length=120)]
-UserName: TypeAlias = Annotated[str, Field(min_length=1, max_length=100)]
-PhoneNumber: TypeAlias = Annotated[str, Field(min_length=1, max_length=20)]
+UserNameInput: TypeAlias = Annotated[str, Field(min_length=1, max_length=100)]
+
 
 class UserCreate(BaseModel):
     """ Fields shared by every way of creating a user, Base of RegisterRequest.  """
@@ -19,18 +18,18 @@ class UserCreate(BaseModel):
     # extra="forbid": unknown fields are rejected
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
-    name: UserName
-    phone_number: PhoneNumber
+    name: UserNameInput
+    phone_number: PhoneNumberInput
     # EmailStr validates the email format
-    email: NormalizedEmail
+    email: NormalizedEmailInput
 
 
 class UserUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
-    name: UserName | None = None
-    phone_number: PhoneNumber | None = None
-    email: NormalizedEmail | None = None
+    name: UserNameInput | None = None
+    phone_number: PhoneNumberInput | None = None
+    email: NormalizedEmailInput | None = None
 
     @field_validator("name", "email", "phone_number")
     @classmethod

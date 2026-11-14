@@ -3,6 +3,11 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.models.cart import Cart, CartStatus
 from app.models.cart_item import CartItem
+from app.errors.exceptions import DomainError, NotFoundError
+
+CONSTRAINT_ERRORS: dict[str, tuple[type[DomainError], str]] = {
+    "fk_cart_items_product_id_products": (NotFoundError, "Product not found.")
+}
 
 class CartRepository:
     def __init__(self, session: Session) -> None:
@@ -15,3 +20,5 @@ class CartRepository:
             .options(selectinload(Cart.cart_items).joinedload(CartItem.product, innerjoin=True))
         )
         return self._session.scalar(query)
+
+    

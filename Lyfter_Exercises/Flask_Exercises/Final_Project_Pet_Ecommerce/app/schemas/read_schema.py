@@ -1,3 +1,4 @@
+""" How a complete read schema behaves. """
 from pydantic import BaseModel, ConfigDict
 
 class ReadSchema(BaseModel):

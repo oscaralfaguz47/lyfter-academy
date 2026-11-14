@@ -1,10 +1,11 @@
 from decimal import Decimal
 from pydantic import computed_field
-from datetime import datetime
 
 from app.domain.pricing import line_total
 from app.schemas.read_schema import ReadSchema
-from app.schemas.types import Money, Quantity
+from app.schemas.input_schema import InputSchema
+from app.schemas.read_types import Money, Quantity
+from app.schemas.input_types import QuantityInput
 
 
 class CartProductRead(ReadSchema):
@@ -30,3 +31,6 @@ class CartRead(ReadSchema):
     def total_amount(self) -> Money:
         return sum((item.total_amount for item in self.cart_items), Decimal(0))
 
+class SetCartItemQuantity(InputSchema):
+    """ Body of PUT in /cart/items/<product_id> """
+    quantity: QuantityInput

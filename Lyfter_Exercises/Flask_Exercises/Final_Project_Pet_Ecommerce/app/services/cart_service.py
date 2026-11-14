@@ -2,7 +2,7 @@
 from sqlalchemy.orm import Session
 
 from app.repositories.cart_repository import CartRepository
-from app.models.cart import Cart
+from app.schemas.cart import CartRead
 
 class CartService:
     def __init__(self, session: Session, repository: CartRepository) -> None:
@@ -10,12 +10,12 @@ class CartService:
         self._repository = repository
 
 
-    def get_cart(self, user_id: int) -> Cart:
+    def get_cart(self, user_id: int) -> CartRead:
+        """ The user's pending cart, or an empty one if they don't have it yet, a GET never creates it. """
         cart = self._repository.get_pending_by_user(user_id)
-        if cart:
-            return cart
-        else: 
-            return Cart() 
+        if cart is None:
+            return CartRead(cart_items=[])
+        return CartRead.model_validate(cart)
 
         
 

@@ -1,3 +1,4 @@
+""" How a complete input schema behaves. """
 from pydantic import BaseModel, ConfigDict
 
 class InputSchema(BaseModel):
