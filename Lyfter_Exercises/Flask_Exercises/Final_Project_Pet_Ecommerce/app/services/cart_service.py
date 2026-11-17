@@ -40,7 +40,19 @@ class CartService:
         self._session.commit()
         logger.info("User %s set product %s in cart %s, quantity %s", user_id, product_id, cart_id, quantity)
 
+        return self._load_pending_cart(user_id)
+
+    def remove_item(self, user_id: int, product_id: int) -> CartRead:
+        if not self._repository.delete_item(user_id, product_id):
+            raise NotFoundError(f"Product {product_id} is not in the cart.")
+        self._session.commit()
+        logger.info("User %s removed product %s from their cart", user_id, product_id)
+        return self._load_pending_cart(user_id)
+
+
+    def _load_pending_cart(self, user_id: int) -> CartRead:
+        """ Read the cart right after changing it, it must exist, if it doesn't, it's a bug, not an empty cart. """
         cart = self._repository.get_pending_by_user(user_id)
         if cart is None:
-            raise RuntimeError(f"Pending cart of user {user_id} not found right after upserting an item.")
+            raise RuntimeError(f"Pending cart of user {user_id} not found right after changing it.")
         return CartRead.model_validate(cart)

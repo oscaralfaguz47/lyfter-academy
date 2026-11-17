@@ -30,3 +30,9 @@ def set_cart_item(product_id: int):
     data = parse(SetCartItemQuantity, request.get_json())
     cart = _cart_service().set_item(current_user_id(), product_id, data.quantity)
     return ok(serialize(CartRead, cart))
+
+@cart_bp.delete("/items/<int:product_id>")
+@login_required
+def remove_cart_item(product_id: int):
+    cart = _cart_service().remove_item(current_user_id(), product_id)
+    return ok(serialize(CartRead, cart))

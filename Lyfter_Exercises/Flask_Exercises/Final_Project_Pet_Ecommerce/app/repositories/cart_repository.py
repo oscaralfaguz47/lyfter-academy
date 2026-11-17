@@ -1,4 +1,4 @@
-from sqlalchemy import select, Executable
+from sqlalchemy import select, Executable, delete
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.dialects.postgresql import insert
@@ -47,6 +47,20 @@ class CartRepository:
             set_={"quantity": statement.excluded.quantity},
         )
         self._execute(statement)
+
+    def delete_item(self, user_id: int, product_id: int) -> bool:
+        pending_cart_id = (
+            select(Cart.id)
+            .where(Cart.user_id == user_id, Cart.status == CartStatus.PENDING)
+            .scalar_subquery()
+        )
+        statement = (
+            delete(CartItem)
+            .where(CartItem.cart_id == pending_cart_id, CartItem.product_id == product_id)
+            .returning(CartItem.product_id)
+        )
+        return self._session.scalars(statement).one_or_none() is not None
+
 
     def _execute(self, statement: Executable) -> None:
         try: 
