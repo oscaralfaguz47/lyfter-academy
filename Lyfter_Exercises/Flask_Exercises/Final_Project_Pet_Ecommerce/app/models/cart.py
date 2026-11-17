@@ -11,6 +11,7 @@ from app.models.mixins import TimesTampMixin
 if TYPE_CHECKING:
     from app.models.user import User
     from app.models.cart_item import CartItem
+    from app.models.invoice import Invoice
 
 
 class CartStatus(StrEnum):
@@ -43,4 +44,5 @@ class Cart(TimesTampMixin, Base):
     user: Mapped["User"] = relationship(back_populates="carts", foreign_keys=[user_id], lazy="raise")
 
     # Relationship with many
-    cart_items: Mapped[list["CartItem"]] = relationship(back_populates="cart", cascade="all, delete-orphan", passive_deletes=True, lazy="raise")
+    cart_items: Mapped[list["CartItem"]] = relationship(back_populates="cart", cascade="all, delete-orphan", passive_deletes=True, order_by="CartItem.product_id", lazy="raise")
+    invoice: Mapped["Invoice | None"] = relationship(back_populates="cart", passive_deletes="all", lazy="raise")

@@ -1,4 +1,4 @@
-from sqlalchemy import select, Executable, delete
+from sqlalchemy import select, Executable, delete, ColumnElement, and_
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.dialects.postgresql import insert
@@ -20,10 +20,21 @@ class CartRepository:
     def get_pending_by_user(self, user_id: int) -> Cart | None:
         query = (
             select(Cart)
-            .where(Cart.user_id == user_id, Cart.status == CartStatus.PENDING)
+            .where(_pending_cart_of(user_id))
             .options(selectinload(Cart.cart_items).joinedload(CartItem.product, innerjoin=True))
         )
-        return self._session.scalar(query)
+        return self._session.scalars(query).one_or_none()
+
+    def get_pending_by_user_for_update(self, user_id: int) -> Cart | None:
+        """ Load and lock the user's pending cart until commit for the checkout. A second checkout of the same cart waits here. """
+        query = (
+            select(Cart)
+            .where(_pending_cart_of(user_id))
+            .options(selectinload(Cart.cart_items)) # selectinload: Postgres can't lock the nullable side of an outer join
+            .with_for_update()
+        )
+        return self._session.scalars(query).one_or_none()
+    
 
     def ensure_pending_cart_id(self, user_id: int) -> int:
         """ Create the user's pending cart if it doesn't exist yet and returns its id. """
@@ -36,7 +47,7 @@ class CartRepository:
             )
         )
         self._session.execute(statement)
-        query = select(Cart.id).where(Cart.user_id == user_id, Cart.status == CartStatus.PENDING)
+        query = select(Cart.id).where(_pending_cart_of(user_id))
         return self._session.scalars(query).one()
 
     def upsert_item(self, cart_id: int, product_id: int, quantity: Decimal) -> None:
@@ -51,7 +62,7 @@ class CartRepository:
     def delete_item(self, user_id: int, product_id: int) -> bool:
         pending_cart_id = (
             select(Cart.id)
-            .where(Cart.user_id == user_id, Cart.status == CartStatus.PENDING)
+            .where(_pending_cart_of(user_id))
             .scalar_subquery()
         )
         statement = (
@@ -71,6 +82,10 @@ class CartRepository:
                 raise
             error_class, message = mapped
             raise error_class(message) from error
+
+def _pending_cart_of(user_id: int) -> ColumnElement[bool]:
+    """ The one condition that identifies a user's open cart, covered by 'uq_carts_user_id_pending'. """
+    return and_(Cart.user_id == user_id, Cart.status == CartStatus.PENDING)
 
 def _violated_constraint(error: IntegrityError) -> str | None:
     diagnostics = getattr(error.orig, "diag", None)

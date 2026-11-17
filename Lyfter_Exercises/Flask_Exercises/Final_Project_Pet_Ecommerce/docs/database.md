@@ -14,7 +14,7 @@ PostgreSQL through SQLAlchemy.
 | password_hash            | varchar(255)        |                                
 | name                     | varchar(100)   |                                
 | phone_number             | varchar(20)    |                                
-| role                     | varchar(20)        | "admin or client" | "ck_users_role_valid" 
+| role                     | varchar(20)        | "admin or client", default "client" | "ck_users_role_valid" 
 | token_version default=0  | int            |                                
 | created_at               | timestamptz    | server_default=func.now()      
 | updated_at               | timestamptz    | server_default=func.now()
@@ -25,7 +25,7 @@ PostgreSQL through SQLAlchemy.
 |---|---|---|---|---|
 | id | int | | "pk_login_history" 
 | user_id | int | **NULL** if email unknown | "fk_login_history_user_id_users" | login_history.user_id
-| user_ip | inet 
+| user_ip | inet | **NULL**
 | success | boolean
 | login_date |  timestamptz | server_default=func.now()
 
@@ -34,9 +34,9 @@ PostgreSQL through SQLAlchemy.
 |---|---|---|---|---|
 | id | int | | "pk_products"
 | name | varchar(30) | | "uq_products_name"
-| price | numeric(10,2) | | "ck_products_price_positive"
-| stock | numeric(12,3) | CheckConstraint("stock >= 0") | "ck_products_stock_non_negative"
-| entry_date | date 
+| price | numeric(10,2) | price > 0 | "ck_products_price_positive"
+| stock | numeric(12,3) | stock >= 0, default 0 | "ck_products_stock_non_negative"
+| entry_date | date | server_default=func.current_date()
 | created_by_id | int | | "fk_products_created_by_id_users" | products.created_by_id
 | updated_by_id | int | **NULL** | "fk_products_updated_by_id_users" | products.updated_by_id
 | created_at | timestamptz | server_default=func.now() 
@@ -46,8 +46,8 @@ PostgreSQL through SQLAlchemy.
 |Name | Type | Details | Constraint| Index
 |---|---|---|---|---|
 | id | int | | "pk_carts"
-| user_id |  int | | "fk_carts_user_id_users", "uq_carts_user_id_pending" | carts.user_id
-| status | varchar(10) | "pending or completed" | "ck_carts_status_valid"
+| user_id |  int | "uq_carts_user_id_pending" is a partial unique index (WHERE status = 'pending'): one pending cart per user | "fk_carts_user_id_users", "uq_carts_user_id_pending" | carts.user_id
+| status | varchar(10) | "pending or completed", default "pending" | "ck_carts_status_valid"
 | created_at |  timestamptz | server_default=func.now()  
 | updated_at | timestamptz | server_default=func.now() 
 
@@ -64,14 +64,14 @@ PostgreSQL through SQLAlchemy.
 | id | int | | "pk_invoices"
 | invoice_number | int  | "starts at 100" | "uq_invoices_invoice_number"
 | client_id | int  | | "fk_invoices_client_id_users" | invoices.client_id
-| cart_id | int | FK, UK | "fk_invoices_cart_id_carts", "uq_invoices_cart_id"
-| status |  varchar(10) |  "paid or returned" | "ck_invoices_status_valid"
+| cart_id | int | FK, UK: a cart produces at most one invoice | "fk_invoices_cart_id_carts", "uq_invoices_cart_id"
+| status |  varchar(10) |  "paid or returned", default "paid" | "ck_invoices_status_valid"
 | total_amount | numeric(10,2) | total_amount >= 0 | "ck_invoices_total_amount_non_negative"
 | billing_address | varchar(100) 
 | billing_city | varchar(60)
 | billing_province |  varchar(60)
 | billing_postal_code | varchar(5) 
-| payment_method | varchar(5) | "sinpe or card" | "ck_invoices_payment_method_valid"
+| payment_method | varchar(5) | "sinpe or card", no default: the client chooses it | "ck_invoices_payment_method_valid"
 | payment_reference |  varchar(40)
 | created_by_id |  int | | "fk_invoices_created_by_id_users" | invoices.created_by_id
 | updated_by_id | int | **NULL** | "fk_invoices_updated_by_id_users" | invoices.updated_by_id
@@ -82,14 +82,16 @@ PostgreSQL through SQLAlchemy.
 |Name | Type | Details | Constraint| Index
 |---|---|---|---|---|
 | id | int | | "pk_invoice_lines"
-| invoice_id | int | UNIQUE(invoice_id and product_id) | "fk_invoice_lines_invoice_id_invoices", "uq_invoice_lines_invoice_id"
+| invoice_id | int | UNIQUE(invoice_id and product_id) | "fk_invoice_lines_invoice_id_invoices", "uq_invoice_lines_invoice_id" | invoice_lines.invoice_id
 | product_id | int | UNIQUE(invoice_id and product_id) | "fk_invoice_lines_product_id_products" | invoice_lines.product_id
-| product_name |  varchar(30)
-| price | numeric(10,2) | | "ck_invoice_lines_price_non_negative"
+| product_name |  varchar(30) | Snapshot of products.name at the time of the sale
+| price | numeric(10,2) | price > 0, snapshot of products.price | "ck_invoice_lines_price_positive"
 | quantity |  numeric(12,3) | quantity > 0 | "ck_invoice_lines_quantity_positive"
-| total_amount |  numeric(10,2) | | "ck_invoice_lines_total_amount_non_negative"
+| total_amount |  numeric(10,2) | total_amount >= 0 | "ck_invoice_lines_total_amount_non_negative"
 
 ## invoice_returns
+> **Planned, not implemented yet.** There's no model or migration for this table.
+
 |Name | Type | Details | Constraint| Index
 |---|---|---|---|---|
 | id |  int | | "pk_invoice_returns"
@@ -101,6 +103,8 @@ PostgreSQL through SQLAlchemy.
 
 
 ## invoice_return_lines
+> **Planned, not implemented yet.** There's no model or migration for this table.
+
 |Name | Type | Details | Constraint| Index
 |---|---|---|---|---|
 | id | int | | "pk_invoice_return_lines"
@@ -140,8 +144,12 @@ These aren't duplicated data in the normalization sense. Each one records a fact
 
 `USER_REFERENCING_CONSTRAINTS` in `user_repository.py` must list every `RESTRICT` FK to `users`. Deleting a user that one of them still references returns 409 instead of 500. Today they are `fk_products_created_by_id_users`, `fk_products_updated_by_id_users`, `fk_invoices_client_id_users`, `fk_invoices_created_by_id_users` and `fk_invoices_updated_by_id_users`. Add `fk_invoice_returns_created_by_id_users` when the `invoice_returns` table is implemented. `carts.user_id` (`CASCADE`) and `login_history.user_id` (`SET NULL`) never block a delete, so they don't belong in the list.
 
+**Pending:** deleting a user cascades to their carts, and `invoices.cart_id` (`RESTRICT`) blocks deleting a cart that has an invoice. The delete is still blocked by `fk_invoices_client_id_users`, but Postgres may report `fk_invoices_cart_id_carts` instead. Verify it with a test, and if it does, add `fk_invoices_cart_id_carts` to `USER_REFERENCING_CONSTRAINTS` so the client gets 409 instead of 500.
+
 
 ## Entity-relationship diagram
+
+`invoice_returns` and `invoice_return_lines` are planned, not implemented yet.
 
 ```mermaid
 erDiagram
@@ -232,7 +240,7 @@ erDiagram
         int invoice_id FK, UK "UNIQUE with product_id"
         int product_id FK, UK "UNIQUE with invoice_id"
         varchar(30) product_name
-        numeric price "10,2 and at least 0"
+        numeric price "10,2 and greater than 0"
         numeric quantity "12,3 and greater than 0"
         numeric total_amount "10,2 and at least 0"
     }
