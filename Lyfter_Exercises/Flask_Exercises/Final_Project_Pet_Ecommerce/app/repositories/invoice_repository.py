@@ -23,9 +23,23 @@ class InvoiceRepository:
         self._flush()
         return invoice
 
-    def get_by_id(self, invoice_id: int) -> Invoice | None:
-        query = select(Invoice).where(Invoice.id == invoice_id).options(selectinload(Invoice.invoice_lines))
+    def get_by_number(self, invoice_number: int) -> Invoice | None:
+        query = (
+            select(Invoice)
+            .where(Invoice.invoice_number == invoice_number)
+            .options(selectinload(Invoice.invoice_lines))
+        )
         return self._session.scalar(query)
+
+    def get_by_number_for_update(self, invoice_number: int) -> Invoice | None:
+        """ Load and lock the invoice until commit, for returns. """
+        query = (
+            select(Invoice)
+            .where(Invoice.invoice_number == invoice_number)
+            .options(selectinload(Invoice.invoice_lines))  # selectinload: Postgres can't lock the nullable side of an outer join
+            .with_for_update()
+        )
+        return self._session.scalars(query).one_or_none()
 
     def list(self, params: InvoiceListParams, client_id: int | None = None) -> Sequence[Invoice]:
         query = (

@@ -15,11 +15,11 @@
 
 | ID | Requirement | Status |
 |---|---|---|
-| PROD-01 | List and read products. | Partial: clients get 403 ⏳ |
+| PROD-01 | List and read products. | Done ✔ |
 | PROD-02 | Create products. | Done ✔ |
 | PROD-03 | Update products. | Done ✔ |
 | PROD-04 | Delete products. | Done ✔ |
-| PROD-05 | Sales and returns update the stock. | Partial: sales only ⏳ |
+| PROD-05 | Sales and returns update the stock. | Done ✔ |
 
 ## Sales
 
@@ -32,8 +32,8 @@
 | SALE-02 | A sale generates an invoice. | Done ✔: with cart, billing, payment and snapshots |
 | SALE-03 | A sale reduces stock. | Done ✔ |
 | SALE-04 | A sale asks for billing address and payment data. | Done ✔: no card data is stored ([ADR-0006](adr/0006-payment-data-handling.md)) |
-| INV-01 | Get an invoice by its number. | Partial: ⏳ uses the internal id |
-| INV-02 | Returns restore stock. | Missing ⏳ |
+| INV-01 | Get an invoice by its number. | Done ✔: `GET /invoices/{number}` |
+| INV-02 | Returns restore stock. | Done ✔: `POST /invoices/{number}/returns` |
 
 ## Database
 
@@ -50,7 +50,7 @@
 |---|---|---|
 | API-01 | Read, create, update and delete endpoints for each relevant entity. Junction tables don't need them. | Partial ⏳. Invoices have no delete on purpose, see [ADR-0005](adr/0005-invoice-snapshots-and-restricted-deletes.md) |
 | API-02 | Only admins create, update or delete products and invoices, and update or delete any user. Users are created only through registration (AUTH-01); admins are promoted with `flask promote-admin`. | Partial: ⏳ invoice update is missing. Invoices are cancelled with a return instead of a delete ([ADR-0005](adr/0005-invoice-snapshots-and-restricted-deletes.md)). Clients create invoices only through checkout, which is a sale (API-03) |
-| API-03 | Clients can use read endpoints, sales and carts. | Partial ⏳: carts and checkout done, product reads still return 403 (PROD-01) |
+| API-03 | Clients can use read endpoints, sales and carts. | Done ✔ |
 
 
 
@@ -66,8 +66,8 @@
 
 | ID | Requirement | Status |
 |---|---|---|
-| TEST-01 | Unit tests with good coverage. | In progress: passwords, auth, permissions |
-| TEST-02 | Success and error cases, including messages. | In progress: auth, permissions, own account |
+| TEST-01 | Unit tests with good coverage. | In progress ⏳: unit (passwords, tokens, permissions) and routes (auth, users, products, cart, checkout, invoices, returns). Invoice updates pending |
+| TEST-02 | Success and error cases, including messages. | In progress ⏳: done for every built endpoint |
 | TEST-03 | A script runs the tests and writes a short report. | Missing ⏳ |
 | TEST-04 | Documented steps to run the tests. | Done: ✔ [testing.md](testing.md) |
 

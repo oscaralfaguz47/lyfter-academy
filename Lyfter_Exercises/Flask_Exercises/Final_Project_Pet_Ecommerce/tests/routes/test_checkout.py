@@ -12,7 +12,7 @@ def test_checkout_returns_201_with_the_invoice_reduces_stock_and_empties_the_car
 
     assert response.status_code == HTTPStatus.CREATED
     invoice = response.get_json()["data"]
-    assert response.headers["Location"] == f"/api/v1/invoices/{invoice['id']}"
+    assert response.headers["Location"] == f"/api/v1/invoices/{invoice['invoice_number']}"
     assert invoice["status"] == "paid"
     assert invoice["total_amount"] == "11.00"
     assert [(line["product_id"], line["product_name"], line["quantity"], line["price"]) for line in invoice["invoice_lines"]] == [

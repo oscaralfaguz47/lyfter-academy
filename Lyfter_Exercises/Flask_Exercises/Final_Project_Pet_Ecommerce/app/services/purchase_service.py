@@ -49,10 +49,11 @@ class PurchaseService:
         logger.info("User %s checked out cart %s (invoice %s, total %s)", actor.id, cart.id, invoice.id, invoice.total_amount)
         return invoice
 
-    def get_invoice(self, invoice_id: int, actor: Actor) -> Invoice:
-        invoice = self._invoice_repository.get_by_id(invoice_id)
+    def get_invoice(self, invoice_number: int, actor: Actor) -> Invoice:
+        """ Someone else's invoice returns the same 404 as a missing one, so its existence isn't revealed. """
+        invoice = self._invoice_repository.get_by_number(invoice_number)
         if invoice is None or (invoice.client_id != actor.id and not actor.can(Permission.INVOICES_READ)):
-            raise NotFoundError(f"Invoice {invoice_id} not found.")
+            raise NotFoundError(f"Invoice {invoice_number} not found.")
         return invoice
 
     def list_invoices(self, params: InvoiceListParams, actor: Actor) -> tuple[Sequence[Invoice], int]:

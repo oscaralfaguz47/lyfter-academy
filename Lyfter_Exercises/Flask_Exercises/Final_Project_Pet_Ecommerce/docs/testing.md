@@ -201,19 +201,15 @@ Concurrency tests (several threads checking out at once) aren't included. The ro
 
 ### Invoices and returns
 
+Only the essential cases, in `tests/routes/test_invoices.py`:
+
 | Case | Expected |
 |---|---|
-| Owner or admin reads by number | 200 |
-| Another client | 404 |
-| Client lists | Only their own, even when sending another `client_id` |
-| Admin updates billing | 200 |
-| Client updates billing | 403 |
-| `DELETE /invoices/{number}` | 405 |
-| Partial return | 201, stock restored, still `paid` |
+| Owner reads by number | 200, the same invoice checkout returned |
+| Another client reads it | 404 |
+| Partial return | 201, refund at the invoice price, stock restored, still `paid` |
 | Return everything | `returned` |
-| Return more than what's left | 409, counting earlier returns |
-| Line from another invoice | 422 |
-| Return on a `returned` invoice | 409 |
+| Return more than what's left, counting an earlier return | 409 with `errors.lines` |
 | Client creates a return | 403 |
 
 ### Cache

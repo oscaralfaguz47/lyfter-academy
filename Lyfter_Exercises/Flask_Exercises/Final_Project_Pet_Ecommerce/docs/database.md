@@ -90,7 +90,7 @@ PostgreSQL through SQLAlchemy.
 | total_amount |  numeric(10,2) | total_amount >= 0 | "ck_invoice_lines_total_amount_non_negative"
 
 ## invoice_returns
-> The table and its model exist (migration `d2afd8d4c20b`). The return endpoints aren't implemented yet.
+> Created by migration `d2afd8d4c20b`. Used by `POST` and `GET /invoices/{number}/returns`.
 
 Returns are immutable financial records, like invoices: there's no `updated_at` or `updated_by_id`. A new return is created instead of editing one.
 
@@ -105,11 +105,11 @@ Returns are immutable financial records, like invoices: there's no `updated_at` 
 
 
 ## invoice_return_lines
-> The table and its model exist (migration `d2afd8d4c20b`). The return endpoints aren't implemented yet.
+> Created by migration `d2afd8d4c20b`. Used by `POST` and `GET /invoices/{number}/returns`.
 
 A line appears at most once per return. Returning more of it later is another return.
 
-The total returned of an invoice line can't exceed its sold `quantity`. A CHECK can't enforce it because it compares rows of two tables, so the return service has to validate it with the invoice lines locked (`FOR UPDATE`). `ix_invoice_return_lines_invoice_line_id` serves that sum.
+The total returned of an invoice line can't exceed its sold `quantity`. A CHECK can't enforce it because it compares rows of two tables, so the return service has to validate it with the invoice row locked (`FOR UPDATE`): every return of an invoice goes through that lock, so two returns can't both pass the check. `ix_invoice_return_lines_invoice_line_id` serves that sum.
 
 |Name | Type | Details | Constraint| Index
 |---|---|---|---|---|
@@ -155,7 +155,7 @@ Deleting a user cascades to their carts, and `invoices.cart_id` (`RESTRICT`) als
 
 ## Entity-relationship diagram
 
-`invoice_returns` and `invoice_return_lines` exist in the database, their endpoints aren't implemented yet.
+`invoice_returns` and `invoice_return_lines` are used by the return endpoints.
 
 ```mermaid
 erDiagram

@@ -1,6 +1,6 @@
 # 0004: One transaction and row locks for checkout
 
-**Status:** Accepted. Built for checkout (cart and product locking). Returns are pending.
+**Status:** Accepted. Built for checkout (cart, then products) and returns (invoice, then products).
 **Date:** 2026-11-05
 
 ## Context
@@ -14,7 +14,7 @@ Checkout writes an invoice, its lines, stock and cart status. A failure halfway 
 - Keep `CHECK (stock >= 0)` and `UNIQUE (invoices.cart_id)` as a last defense.
 - Don't reserve stock when adding to a cart.
 
-The concurrency tests in [testing.md](../testing.md#checkout) cover both cases with real threads against PostgreSQL.
+Both cases were checked by hand with two real PostgreSQL connections: the second checkout waits on the lock and then finds no pending cart. There are no automated concurrency tests ([testing.md](../testing.md#checkout)).
 
 ## Alternatives
 

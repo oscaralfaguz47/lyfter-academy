@@ -1,6 +1,6 @@
 # 0005: Invoice snapshots and restricted deletes
 
-**Status:** Accepted. The price snapshot and `RESTRICT` are built, the rest is pending.
+**Status:** Accepted. Built.
 **Date:** 2026-11-05
 
 ## Context

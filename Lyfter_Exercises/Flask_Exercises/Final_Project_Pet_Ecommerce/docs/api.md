@@ -39,10 +39,10 @@ Own = allowed only on your own data. Someone else's returns 404.
 | `GET /products`, `GET /products/{id}` | Yes | Yes |
 | `POST /products`, `PATCH`, `DELETE`, `PATCH .../restock` | Yes | No |
 | `GET /cart`, `PUT` and `DELETE /cart/items/{product_id}`, `POST /cart/checkout` | Own | Own |
-| `GET /invoices`, `GET /invoices/{id}` | All | Own |
+| `GET /invoices`, `GET /invoices/{number}` | All | Own |
 | `PATCH /invoices/{number}` (not built yet) | Yes | No |
-| `POST /invoices/{number}/returns` (not built yet) | Yes | No |
-| `GET /invoices/{number}/returns` (not built yet) | All | Own |
+| `POST /invoices/{number}/returns` | Yes | No |
+| `GET /invoices/{number}/returns` | All | Own |
 
 Clients can't list `/users` because it has other people's personal data. They read and update their own account at `/users/{id}`; someone else's id returns 404, the same as an id that doesn't exist. `/auth/me` also returns their account. Only admins delete users.
 
@@ -135,7 +135,7 @@ Cart prices are current product prices. The final price is fixed at checkout. Th
 
 ## Checkout
 
-`POST /cart/checkout` buys every item in the user's pending cart. It returns 201 with the invoice and a `Location` header to `/invoices/{id}`. The cart becomes `completed`.
+`POST /cart/checkout` buys every item in the user's pending cart. It returns 201 with the invoice and a `Location` header to `/invoices/{number}`. The cart becomes `completed`.
 
 ```json
 {
@@ -168,10 +168,10 @@ Checking out the same cart twice returns 409 the second time: the cart is alread
 | Endpoint | Body | Response | Errors |
 |---|---|---|---|
 | `GET /invoices` | `invoice_number`, `client_id` (admins), `sort` | 200 list | |
-| `GET /invoices/{id}` | | 200 | 404 |
+| `GET /invoices/{number}` | | 200 | 404, also for someone else's invoice |
 | `PATCH /invoices/{number}` (not built yet) | any `billing` field | 200 | 404, 422 |
 
-`GET /invoices/{id}` uses the internal id for now. Getting it by `invoice_number` is INV-01, still pending.
+`{number}` is the `invoice_number` printed on the invoice (it starts at 100), not the internal `id`.
 
 There's no `POST /invoices`. `POST /cart/checkout` is the only way to create one, so an invoice can't exist without its cart, sale and stock change.
 
@@ -207,9 +207,7 @@ Only the billing fields can be edited. Amounts, lines and payment data can't. Fi
 
 ## Returns
 
-> Not built yet. The `invoice_returns` and `invoice_return_lines` tables exist, the endpoints don't.
-
-`POST /invoices/{number}/returns` is admin only and returns 201. `reason` is up to 100 characters and each `quantity` must be greater than 0.
+`POST /invoices/{number}/returns` is admin only and returns 201, with a `Location` header to `GET /invoices/{number}/returns`. `reason` is 1 to 100 characters, and each `quantity` must be greater than 0. `invoice_line_id` is the `id` of a line in the invoice response.
 
 ```json
 { "reason": "Damaged packaging", "lines": [{ "invoice_line_id": 1, "quantity": "1" }] }
@@ -218,23 +216,24 @@ Only the billing fields can be edited. Amounts, lines and payment data can't. Fi
 ```json
 {
   "id": 5,
-  "invoice_number": 100,
   "reason": "Damaged packaging",
   "refund_amount": "100.00",
-  "invoice_status": "paid",
-  "lines": [{ "invoice_line_id": 1, "quantity": "1.000" }],
-  "created_at": "2026-11-05T23:53:53Z"
+  "created_at": "2026-11-05T23:53:53Z",
+  "invoice_return_lines": [{ "invoice_line_id": 1, "quantity": "1.000" }],
+  "invoice_number": 100,
+  "invoice_status": "paid"
 }
 ```
 
-The invoice stays `paid` until every line is fully returned. Then it becomes `returned`. Returning every line is also how a sale is cancelled.
+The refund uses the price frozen in the invoice line, not today's product price. The returned quantity goes back to stock. The invoice stays `paid` until every line is fully returned, counting earlier returns. Then it becomes `returned`. Returning every line is also how a sale is cancelled.
 
 | Status | When |
 |---|---|
+| 403 | A client creating a return |
 | 404 | The invoice doesn't exist |
-| 409 | The invoice is already `returned`, or the quantity exceeds what's left to return |
-| 422 | Invalid body, duplicate line, or a line from another invoice |
+| 409 | The invoice is already `returned`, or a quantity exceeds what's left to return (details in `errors.lines`) |
+| 422 | Invalid body, the same line twice, or a line from another invoice |
 
-`GET /invoices/{number}/returns` lists the returns of an invoice.
+`GET /invoices/{number}/returns` lists the returns of an invoice, oldest first. The owner and admins can read it; someone else's invoice returns 404.
 
 Returns have no `PATCH` or `DELETE`. They're a financial record, and undoing one would have to move stock back again.

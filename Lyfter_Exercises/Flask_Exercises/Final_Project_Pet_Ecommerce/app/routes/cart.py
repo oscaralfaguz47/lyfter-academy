@@ -44,4 +44,4 @@ def remove_cart_item(product_id: int):
 def checkout():
     data = parse(CheckoutRequest, request.get_json())
     invoice = purchase_service().checkout(data, current_actor())
-    return created(serialize(InvoiceRead, invoice), location=url_for("invoices.get_invoice", invoice_id=invoice.id))
+    return created(serialize(InvoiceRead, invoice), location=url_for("invoices.get_invoice", invoice_number=invoice.invoice_number))

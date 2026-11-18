@@ -112,13 +112,15 @@ All of it runs in one transaction. If anything fails, the session closes without
 
 Admin only, in one transaction:
 
-1. Lock the invoice row. Return 404 if it doesn't exist and 409 if it's `returned`.
+1. Lock the invoice row with `FOR UPDATE`. Return 404 if it doesn't exist and 409 if it's `returned`. Every return of the invoice waits here, so two returns can't both pass step 3.
 2. Check that each line belongs to this invoice. Otherwise return 422.
 3. Add up what was already returned per line. Requested plus returned can't exceed purchased, otherwise return 409.
 4. Lock the products by id and add the returned quantity to stock.
-5. Insert the return and its lines. The refund is the sum of `line.price × quantity`.
+5. Insert the return and its lines. The refund is the sum of `line_total(line.price, quantity)`: the frozen price, rounded like the sale.
 6. Set the status to `returned` if every line is fully returned, otherwise `paid`.
-7. Commit, then invalidate the invoice and its products.
+7. Commit, then invalidate the cache of those products.
+
+The code is `ReturnService` in `app/services/return_service.py`.
 
 ## Cancelling a sale
 

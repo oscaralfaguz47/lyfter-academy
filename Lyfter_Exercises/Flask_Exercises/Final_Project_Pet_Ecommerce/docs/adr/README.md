@@ -7,7 +7,7 @@ Each file records one technical decision and why it was made. If a decision chan
 | [0001](0001-flask-sqlalchemy-layered-architecture.md) | Flask and SQLAlchemy in layers | Yes |
 | [0002](0002-jwt-stateless-authentication.md) | JWT with RS256 and token version | Yes, except scrypt |
 | [0003](0003-redis-cache-with-explicit-invalidation.md) | Redis with invalidation and TTL | Products only |
-| [0004](0004-atomic-checkout-with-row-locking.md) | One transaction and row locks for checkout | Checkout yes, returns no |
-| [0005](0005-invoice-snapshots-and-restricted-deletes.md) | Invoice snapshots and restricted deletes | Snapshots and deletes yes, returns no |
+| [0004](0004-atomic-checkout-with-row-locking.md) | One transaction and row locks for checkout | Yes |
+| [0005](0005-invoice-snapshots-and-restricted-deletes.md) | Invoice snapshots and restricted deletes | Yes |
 | [0006](0006-payment-data-handling.md) | No sensitive payment data | Yes |
 | [0007](0007-one-pending-cart-per-user.md) | One pending cart per user | Yes |
