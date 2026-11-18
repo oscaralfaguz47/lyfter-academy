@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Annotated, Literal, Self
 
-from pydantic import Field, computed_field, model_validator
+from pydantic import Field, computed_field, model_validator, field_validator
 from pydantic_core import PydanticCustomError
 
 from app.models.invoice import InvoicePaymentMethod, InvoiceStatus
@@ -38,6 +38,30 @@ class CheckoutRequest(InputSchema):
     """ Body of POST /cart/checkout. The items come from the user's pending cart. """
     billing: BillingAddressInput
     payment: PaymentInput
+
+class BillingAddressUpdate(InputSchema):
+    address: Annotated[str, Field(min_length=1, max_length=100)] | None = None
+    city: Annotated[str, Field(min_length=1, max_length=60)] | None = None
+    province: Annotated[str, Field(min_length=1, max_length=60)] | None = None
+    postal_code: Annotated[str, Field(min_length=1, max_length=5)] | None = None
+
+    @field_validator("address", "city", "province", "postal_code")
+    @classmethod
+    def reject_null(cls, value: str | None) -> str:
+        if value is None:
+            raise ValueError("Cannot be null.")
+        return value
+
+    @model_validator(mode="after")
+    def require_at_least_one_field(self) -> Self:
+        if not self.model_fields_set:
+            raise ValueError("Provide at least one field to update.")
+        return self
+
+
+class InvoiceUpdate(InputSchema):
+    """ Body of PATCH /invoices/<number>. Only the billing address can change (ADR-0005). """
+    billing: BillingAddressUpdate
 
 
 # ---------- READ ----------

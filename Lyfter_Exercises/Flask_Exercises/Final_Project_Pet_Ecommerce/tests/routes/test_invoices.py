@@ -67,3 +67,23 @@ def test_client_creating_a_return_returns_403(client: FlaskClient, client_header
 
     assert response.status_code == HTTPStatus.FORBIDDEN
     assert response.get_json()["detail"] == FORBIDDEN_DETAIL
+
+def test_admin_updates_billing_city_returns_200_and_changes_only_that(
+        client: FlaskClient, admin_headers: dict, paid_invoice: dict) -> None:
+    response = client.patch(f"{INVOICES_URL}/{paid_invoice['invoice_number']}", json={"billing": {"city": "Naranjo"}}, headers=admin_headers)
+
+    assert response.status_code == HTTPStatus.OK
+    invoice = response.get_json()["data"]
+    assert invoice["billing"] == paid_invoice["billing"] | {"city": "Naranjo"}
+    assert invoice["total_amount"] == paid_invoice["total_amount"]
+    assert invoice["invoice_lines"] == paid_invoice["invoice_lines"]
+
+
+def test_client_updating_billing_returns_403_and_changes_nothing(
+        client: FlaskClient, client_headers: dict, paid_invoice: dict) -> None:
+    url = f"{INVOICES_URL}/{paid_invoice['invoice_number']}"
+
+    response = client.patch(url, json={"billing": {"city": "Naranjo"}}, headers=client_headers)
+
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert client.get(url, headers=client_headers).get_json()["data"]["billing"] == paid_invoice["billing"]

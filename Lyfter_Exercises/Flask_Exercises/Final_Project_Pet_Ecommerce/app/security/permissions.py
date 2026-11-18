@@ -18,6 +18,7 @@ class Permission(StrEnum):
     PRODUCTS_RESTOCK = "products:restock"
     INVOICES_READ = "invoices:read"
     INVOICES_RETURN = "invoices:return"
+    INVOICES_UPDATE = "invoices:update"
     LOGIN_HISTORY_READ = "login_history:read"
 
 ROLE_PERMISSIONS: dict[UserRole, frozenset[Permission]] = {

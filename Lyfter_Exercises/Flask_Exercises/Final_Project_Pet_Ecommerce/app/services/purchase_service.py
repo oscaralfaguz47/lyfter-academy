@@ -14,7 +14,7 @@ from app.repositories.cart_repository import CartRepository
 from app.repositories.invoice_repository import InvoiceRepository
 from app.repositories.product_cache import ProductCache
 from app.repositories.product_repository import ProductRepository
-from app.schemas.invoice import CheckoutRequest, InvoiceListParams
+from app.schemas.invoice import CheckoutRequest, InvoiceListParams, InvoiceUpdate
 from app.security.permissions import Actor, Permission
 
 logger = logging.getLogger(__name__)
@@ -54,6 +54,18 @@ class PurchaseService:
         invoice = self._invoice_repository.get_by_number(invoice_number)
         if invoice is None or (invoice.client_id != actor.id and not actor.can(Permission.INVOICES_READ)):
             raise NotFoundError(f"Invoice {invoice_number} not found.")
+        return invoice
+
+    def update_billing(self, invoice_number: int, data: InvoiceUpdate, actor: Actor) -> Invoice:
+        """ Fix the billing address of an invoice. Amounts, lines and payment never change, those are fixed with a return. """
+        invoice = self._invoice_repository.get_by_number(invoice_number)
+        if invoice is None:
+            raise NotFoundError(f"Invoice {invoice_number} not found.")
+        for field, value in data.billing.model_dump(exclude_unset=True).items():
+            setattr(invoice, f"billing_{field}", value)  # billing.city -> invoices.billing_city
+        invoice.updated_by_id = actor.id
+        self._session.commit()
+        logger.info("User %s updated the billing of invoice %s", actor.id, invoice_number)
         return invoice
 
     def list_invoices(self, params: InvoiceListParams, actor: Actor) -> tuple[Sequence[Invoice], int]:

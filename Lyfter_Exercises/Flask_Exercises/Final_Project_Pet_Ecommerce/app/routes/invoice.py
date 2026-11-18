@@ -9,7 +9,7 @@ from app.repositories.invoice_return_repository import InvoiceReturnRepository
 from app.repositories.product_cache import ProductCache
 from app.repositories.product_repository import ProductRepository
 from app.routes.responses import created, ok, pagination_meta, serialize, serialize_many
-from app.schemas.invoice import InvoiceListParams, InvoiceRead
+from app.schemas.invoice import InvoiceListParams, InvoiceRead, InvoiceUpdate
 from app.schemas.invoice_return import InvoiceReturnRead, InvoiceReturnRequest
 from app.schemas.validation import parse
 from app.security.permissions import Permission
@@ -47,6 +47,13 @@ def list_invoices():
 @login_required  # Own invoices, user with Permission.INVOICES_READ sees everyone's
 def get_invoice(invoice_number: int):
     invoice = purchase_service().get_invoice(invoice_number, current_actor())
+    return ok(serialize(InvoiceRead, invoice))
+
+@invoices_bp.patch("/<int:invoice_number>")
+@permission_required(Permission.INVOICES_UPDATE)
+def update_invoice(invoice_number: int):
+    data = parse(InvoiceUpdate, request.get_json())
+    invoice = purchase_service().update_billing(invoice_number, data, current_actor())
     return ok(serialize(InvoiceRead, invoice))
 
 @invoices_bp.post("/<int:invoice_number>/returns")

@@ -9,7 +9,7 @@
 | AUTH-02 | Log in and receive tokens. | Done ✔ |
 | AUTH-03 | Validate the token on every request to other modules. | Done ✔ |
 | AUTH-04 | Admin and client roles. | Done ✔ |
-| AUTH-05 | Limit features by role. | Partial ⏳ |
+| AUTH-05 | Limit features by role. | Done ✔: `ROLE_PERMISSIONS` in `app/security/permissions.py` |
 
 ## Products
 
@@ -48,8 +48,8 @@
 
 | ID | Requirement | Status |
 |---|---|---|
-| API-01 | Read, create, update and delete endpoints for each relevant entity. Junction tables don't need them. | Partial ⏳. Invoices have no delete on purpose, see [ADR-0005](adr/0005-invoice-snapshots-and-restricted-deletes.md) |
-| API-02 | Only admins create, update or delete products and invoices, and update or delete any user. Users are created only through registration (AUTH-01); admins are promoted with `flask promote-admin`. | Partial: ⏳ invoice update is missing. Invoices are cancelled with a return instead of a delete ([ADR-0005](adr/0005-invoice-snapshots-and-restricted-deletes.md)). Clients create invoices only through checkout, which is a sale (API-03) |
+| API-01 | Read, create, update and delete endpoints for each relevant entity. Junction tables don't need them. | Done ✔, with two documented exceptions: invoices have no delete, they're cancelled with a return ([ADR-0005](adr/0005-invoice-snapshots-and-restricted-deletes.md)); the cart is created by its first item and emptied by removing its items ([ADR-0007](adr/0007-one-pending-cart-per-user.md)) |
+| API-02 | Only admins create, update or delete products and invoices, and update or delete any user. Users are created only through registration (AUTH-01); admins are promoted with `flask promote-admin`. | Done ✔: invoices are updated with `PATCH /invoices/{number}` (billing only) and cancelled with a return instead of a delete ([ADR-0005](adr/0005-invoice-snapshots-and-restricted-deletes.md)). Clients create invoices only through checkout, which is a sale (API-03) |
 | API-03 | Clients can use read endpoints, sales and carts. | Done ✔ |
 
 
@@ -66,8 +66,8 @@
 
 | ID | Requirement | Status |
 |---|---|---|
-| TEST-01 | Unit tests with good coverage. | In progress ⏳: unit (passwords, tokens, permissions) and routes (auth, users, products, cart, checkout, invoices, returns). Invoice updates pending |
-| TEST-02 | Success and error cases, including messages. | In progress ⏳: done for every built endpoint |
+| TEST-01 | Unit tests with good coverage. | In progress ⏳: unit (passwords, tokens, permissions) and routes (auth, users, products, cart, checkout, invoices, returns) |
+| TEST-02 | Success and error cases, including messages. | Done ✔: the essential cases of every endpoint, listed in [testing.md](testing.md) |
 | TEST-03 | A script runs the tests and writes a short report. | Missing ⏳ |
 | TEST-04 | Documented steps to run the tests. | Done: ✔ [testing.md](testing.md) |
 

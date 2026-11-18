@@ -207,6 +207,8 @@ Only the essential cases, in `tests/routes/test_invoices.py`:
 |---|---|
 | Owner reads by number | 200, the same invoice checkout returned |
 | Another client reads it | 404 |
+| Admin updates the billing city | 200, only the city changed |
+| Client updates the billing | 403, nothing changed |
 | Partial return | 201, refund at the invoice price, stock restored, still `paid` |
 | Return everything | `returned` |
 | Return more than what's left, counting an earlier return | 409 with `errors.lines` |

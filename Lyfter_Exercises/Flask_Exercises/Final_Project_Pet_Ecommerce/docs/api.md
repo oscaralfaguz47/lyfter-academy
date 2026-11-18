@@ -40,7 +40,7 @@ Own = allowed only on your own data. Someone else's returns 404.
 | `POST /products`, `PATCH`, `DELETE`, `PATCH .../restock` | Yes | No |
 | `GET /cart`, `PUT` and `DELETE /cart/items/{product_id}`, `POST /cart/checkout` | Own | Own |
 | `GET /invoices`, `GET /invoices/{number}` | All | Own |
-| `PATCH /invoices/{number}` (not built yet) | Yes | No |
+| `PATCH /invoices/{number}` | Yes | No |
 | `POST /invoices/{number}/returns` | Yes | No |
 | `GET /invoices/{number}/returns` | All | Own |
 
@@ -169,7 +169,7 @@ Checking out the same cart twice returns 409 the second time: the cart is alread
 |---|---|---|---|
 | `GET /invoices` | `invoice_number`, `client_id` (admins), `sort` | 200 list | |
 | `GET /invoices/{number}` | | 200 | 404, also for someone else's invoice |
-| `PATCH /invoices/{number}` (not built yet) | any `billing` field | 200 | 404, 422 |
+| `PATCH /invoices/{number}` | `billing` with any of `address`, `city`, `province`, `postal_code` | 200 | 403 for clients, 404, 422 |
 
 `{number}` is the `invoice_number` printed on the invoice (it starts at 100), not the internal `id`.
 
@@ -179,7 +179,7 @@ There's no `DELETE` either, so `DELETE /invoices/{number}` returns 405. An invoi
 
 `status` is `paid` or `returned`. See [Returns](#returns).
 
-Only the billing fields can be edited. Amounts, lines and payment data can't. Fix those with a return.
+Only the billing fields can be edited, and only by an admin. Send just the fields that change: `{"billing": {"city": "Naranjo"}}`. An empty `billing` or a `null` value returns 422. Amounts, lines and payment data can't be edited: sending them returns 422 as unknown fields. Fix those with a return.
 
 ```json
 {
