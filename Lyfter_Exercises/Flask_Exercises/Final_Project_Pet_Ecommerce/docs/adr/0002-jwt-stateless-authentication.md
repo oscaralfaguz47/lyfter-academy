@@ -1,6 +1,6 @@
 # 0002: JWT with RS256 and token version
 
-**Status:** Accepted. Replacing MD5 with scrypt is still pending.
+**Status:** Accepted. Built.
 **Date:** 2026-11-05
 
 ## Context

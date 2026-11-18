@@ -3,10 +3,9 @@
 PostgreSQL through SQLAlchemy.
 
 
-## **Tables**
+## Tables
 
-
-## users 
+### users
 |Name | Type | Details | Constraint | Index
 |---|---|---|---|---|
 | id PK                    | int            | | "pk_users" 
@@ -20,7 +19,7 @@ PostgreSQL through SQLAlchemy.
 | updated_at               | timestamptz    | server_default=func.now()
 
 
-## login_history 
+### login_history
 |Name | Type | Details | Constraint | Index 
 |---|---|---|---|---|
 | id | int | | "pk_login_history" 
@@ -29,7 +28,7 @@ PostgreSQL through SQLAlchemy.
 | success | boolean
 | login_date |  timestamptz | server_default=func.now()
 
-## products
+### products
 |Name | Type | Details | Constraint | Index
 |---|---|---|---|---|
 | id | int | | "pk_products"
@@ -42,7 +41,7 @@ PostgreSQL through SQLAlchemy.
 | created_at | timestamptz | server_default=func.now() 
 | updated_at | timestamptz |  server_default=func.now()
 
-## carts
+### carts
 |Name | Type | Details | Constraint| Index
 |---|---|---|---|---|
 | id | int | | "pk_carts"
@@ -51,14 +50,14 @@ PostgreSQL through SQLAlchemy.
 | created_at |  timestamptz | server_default=func.now()  
 | updated_at | timestamptz | server_default=func.now() 
 
-## cart_items
+### cart_items
 |Name | Type | Details | Constraint| Index
 |---|---|---|---|---|
 | cart_id | int | PK Composite with product_id | "pk_cart_items", "fk_cart_items_cart_id_carts" 
 | product_id | int | PK Composite with cart_id | "pk_cart_items", "fk_cart_items_product_id_products" | cart_items.product_id
 | quantity | numeric(12, 3) | quantity > 0 | "ck_cart_items_quantity_positive" 
 
-## invoices
+### invoices
 |Name | Type | Details | Constraint| Index
 |---|---|---|---|---|
 | id | int | | "pk_invoices"
@@ -78,19 +77,18 @@ PostgreSQL through SQLAlchemy.
 | created_at |  timestamptz | server_default=func.now()
 | updated_at |  timestamptz | server_default=func.now() 
 
-## invoice_lines
+### invoice_lines
 |Name | Type | Details | Constraint| Index
 |---|---|---|---|---|
 | id | int | | "pk_invoice_lines"
-| invoice_id | int | UNIQUE(invoice_id and product_id) | "fk_invoice_lines_invoice_id_invoices", "uq_invoice_lines_invoice_id" | invoice_lines.invoice_id
+| invoice_id | int | UNIQUE(invoice_id and product_id). No index of its own: it's the leftmost column of that unique | "fk_invoice_lines_invoice_id_invoices", "uq_invoice_lines_invoice_id"
 | product_id | int | UNIQUE(invoice_id and product_id) | "fk_invoice_lines_product_id_products" | invoice_lines.product_id
 | product_name |  varchar(30) | Snapshot of products.name at the time of the sale
 | price | numeric(10,2) | price > 0, snapshot of products.price | "ck_invoice_lines_price_positive"
 | quantity |  numeric(12,3) | quantity > 0 | "ck_invoice_lines_quantity_positive"
 | total_amount |  numeric(10,2) | total_amount >= 0 | "ck_invoice_lines_total_amount_non_negative"
 
-## invoice_returns
-> Created by migration `d2afd8d4c20b`. Used by `POST` and `GET /invoices/{number}/returns`.
+### invoice_returns
 
 Returns are immutable financial records, like invoices: there's no `updated_at` or `updated_by_id`. A new return is created instead of editing one.
 
@@ -104,8 +102,7 @@ Returns are immutable financial records, like invoices: there's no `updated_at` 
 | created_at | timestamptz | server_default=func.now() 
 
 
-## invoice_return_lines
-> Created by migration `d2afd8d4c20b`. Used by `POST` and `GET /invoices/{number}/returns`.
+### invoice_return_lines
 
 A line appears at most once per return. Returning more of it later is another return.
 

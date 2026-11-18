@@ -8,7 +8,7 @@ First time only:
 2. Create the test database. Its name must end in `_test`, for example `pet_ecommerce_test`. The tests refuse to run otherwise.
 3. If `DB_SCHEMA` is set, create the same schema in the test database, owned by the app user: `CREATE SCHEMA <name> AUTHORIZATION <user>;`. Tests reuse `DB_SCHEMA`; the separate database is what isolates them.
 4. Set `TEST_DATABASE_URL` and `TEST_REDIS_URL` in `.env`. Use a Redis database other than 0, for example `/1`: tests flush it and refuse to run against 0.
-5. Start Redis: `docker start redis-cache`.
+5. Start Redis: `docker start pet-ecommerce-redis-cache` (created in the README's first-time setup).
 
 Then, from the project root:
 
@@ -22,17 +22,19 @@ pytest -x                           # stop at the first failure
 
 `pyproject.toml` sets `pythonpath = ["."]`, so plain `pytest` can `import app`.
 
-## Report script (planned, TEST-03)
+## Report script (TEST-03)
 
-`scripts/run_tests.py`:
+The assignment asks for a script that runs the tests and writes a short report. From the project root:
 
-1. Runs `[sys.executable, "-m", "pytest", "--junitxml=reports/junit.xml"]` with `subprocess.run`.
-2. Reads the XML with `xml.etree.ElementTree`. `root.find("testsuite")` has `tests`, `failures`, `errors`, `skipped` and `time`.
-3. Finds failures: each `testcase` with a `failure` or `error` child.
-4. Writes `reports/test-report.md` and prints the same summary.
-5. Exits with pytest's return code.
+```bash
+python scripts/run_tests.py
+```
 
-Coverage isn't included because `pytest-cov` is a new dependency. Add it only if the course allows it.
+It runs `pytest -rA` from the project root, prints the output and saves it in `reports/test-report.txt`. `-rA` adds a summary at the end with every test and its result (`PASSED`, `FAILED`, `ERROR`), followed by the totals, like `132 passed in 35.25s`. The script exits with pytest's return code: 0 if everything passed, so `python scripts/run_tests.py && git push` only pushes on green.
+
+It only uses the standard library (`subprocess`, `sys`, `pathlib`). `reports/` is generated, so it isn't committed.
+
+Coverage isn't included because `pytest-cov` is a new dependency, and the assignment limits the libraries to the ones seen in the course.
 
 ## What kind of tests
 
@@ -120,15 +122,9 @@ def test_checkout_without_stock_returns_409_and_saves_nothing(client, client_hea
     assert invoices["meta"]["total"] == 0
 ```
 
-To test Redis being down, swap the cache for one pointing to a closed port. Restore it in `finally`, since `app` is shared:
-
-```python
-app.extensions["cache"] = Cache(Redis.from_url("redis://127.0.0.1:1/0", socket_connect_timeout=0.2, socket_timeout=0.2))
-```
-
-For the concurrency tests, start several `threading.Thread`, each calling the endpoint with its own `app.test_client()`. Each request gets its own session. Save the status codes and assert something like `sorted(codes) == [201, 409, 409, 409, 409]`.
-
 ## Test cases
+
+Each table lists what the tests cover. The cart, checkout, invoice and cache tests stick to the essential cases on purpose: the goal is to cover the main flow and its expected failures, not every combination.
 
 ### Auth and permissions
 
@@ -173,7 +169,7 @@ For the concurrency tests, start several `threading.Thread`, each calling the en
 
 ### Cart
 
-Only the essential cases, in `tests/routes/test_cart.py`:
+In `tests/routes/test_cart.py`:
 
 | Case | Expected |
 |---|---|
@@ -187,7 +183,7 @@ Only the essential cases, in `tests/routes/test_cart.py`:
 
 ### Checkout
 
-Only the essential cases, in `tests/routes/test_checkout.py`:
+In `tests/routes/test_checkout.py`:
 
 | Case | Expected |
 |---|---|
@@ -201,7 +197,7 @@ Concurrency tests (several threads checking out at once) aren't included. The ro
 
 ### Invoices and returns
 
-Only the essential cases, in `tests/routes/test_invoices.py`:
+In `tests/routes/test_invoices.py`:
 
 | Case | Expected |
 |---|---|
@@ -216,7 +212,7 @@ Only the essential cases, in `tests/routes/test_invoices.py`:
 
 ### Cache
 
-Only the essential cases, in `tests/routes/test_cache.py`:
+In `tests/routes/test_cache.py`:
 
 | Case | Expected |
 |---|---|

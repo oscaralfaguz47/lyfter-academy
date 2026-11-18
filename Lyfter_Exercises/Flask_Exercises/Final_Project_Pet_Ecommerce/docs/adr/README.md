@@ -5,7 +5,7 @@ Each file records one technical decision and why it was made. If a decision chan
 | # | Decision | Built |
 |---|---|---|
 | [0001](0001-flask-sqlalchemy-layered-architecture.md) | Flask and SQLAlchemy in layers | Yes |
-| [0002](0002-jwt-stateless-authentication.md) | JWT with RS256 and token version | Yes, except scrypt |
+| [0002](0002-jwt-stateless-authentication.md) | JWT with RS256 and token version | Yes |
 | [0003](0003-redis-cache-with-explicit-invalidation.md) | Redis with invalidation and TTL | Yes |
 | [0004](0004-atomic-checkout-with-row-locking.md) | One transaction and row locks for checkout | Yes |
 | [0005](0005-invoice-snapshots-and-restricted-deletes.md) | Invoice snapshots and restricted deletes | Yes |

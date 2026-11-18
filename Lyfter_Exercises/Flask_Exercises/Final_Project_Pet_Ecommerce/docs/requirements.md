@@ -66,9 +66,9 @@
 
 | ID | Requirement | Status |
 |---|---|---|
-| TEST-01 | Unit tests with good coverage. | In progress ⏳: unit (passwords, tokens, permissions) and routes (auth, users, products, cart, checkout, invoices, returns) |
+| TEST-01 | Unit tests with good coverage. | Done ✔: unit (passwords, tokens, permissions) and routes (auth, users, products, cart, checkout, invoices, returns, cache) |
 | TEST-02 | Success and error cases, including messages. | Done ✔: the essential cases of every endpoint, listed in [testing.md](testing.md) |
-| TEST-03 | A script runs the tests and writes a short report. | Missing ⏳ |
+| TEST-03 | A script runs the tests and writes a short report. | Done ✔: `python scripts/run_tests.py`, see [testing.md](testing.md#report-script-test-03) |
 | TEST-04 | Documented steps to run the tests. | Done: ✔ [testing.md](testing.md) |
 
 ## Deliverables
@@ -77,7 +77,5 @@
 |---|---|---|
 | DEL-01 | Database diagrams | Done: ✔ [database.md](database.md) |
 | DEL-02 | Reasons for technical decisions | Done: ✔ [adr/](adr/README.md), [caching.md](caching.md) |
-| DEL-03 | README that explains how to run the server and database | Partial: ⏳ it needs to be updated as I'm programming |
-| DEL-04 | Tests in the same PR, ready to run | Missing ⏳ |
-| DEL-05 | Code delivered through a GitHub PR | Missing ⏳ |
+| DEL-03 | README that explains how to run the server and database | Done ✔: [README.md](../README.md) |
 

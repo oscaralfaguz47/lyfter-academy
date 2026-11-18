@@ -1,6 +1,6 @@
 # 0003: Redis with invalidation and TTL
 
-**Status:** Accepted. Built for products, invoices pending.
+**Status:** Accepted. Built for products and invoices.
 **Date:** 2026-11-05
 
 ## Context

@@ -34,7 +34,7 @@ Follow these in new modules. All of them are already in the code.
 - Requests go through `parse(Schema, data)`. Responses go through `ok()`, `created()` or `no_content()`.
 - Input schemas extend `InputSchema`, which rejects unknown fields. Read schemas extend `ReadSchema`.
 - Business errors are `DomainError` subclasses. `app/errors/handlers.py` is the only place that maps them to HTTP.
-- Each repository has a map from constraint name to domain error, like `CONSTRAINT_ERRORS` in `invoice_repository.py`.
+- A repository that can hit a constraint maps its name to a domain error, like `CONSTRAINT_ERRORS` in `invoice_repository.py` and `cart_repository.py`.
 - Money is `Decimal` and `Numeric(10, 2)`. Quantities are `Numeric(12, 3)`, since some products sell by weight. Never use `float`.
 
 ## How a request is checked
@@ -104,7 +104,7 @@ All of it runs in one transaction. If anything fails, the session closes without
 5. Insert the invoice, with the cart id, billing and payment data, and its lines, with name and price snapshots.
 6. Reduce the stock and mark the cart `completed`.
 7. Commit.
-8. Invalidate the cache of those products.
+8. Invalidate the cache of those products and the invoice lists.
 9. Return 201 with the invoice and a `Location` header.
 
 
@@ -118,7 +118,7 @@ Admin only, in one transaction:
 4. Lock the products by id and add the returned quantity to stock.
 5. Insert the return and its lines. The refund is the sum of `line_total(line.price, quantity)`: the frozen price, rounded like the sale.
 6. Set the status to `returned` if every line is fully returned, otherwise `paid`.
-7. Commit, then invalidate the cache of those products.
+7. Commit, then invalidate the cache of those products, the invoice and the invoice lists.
 
 The code is `ReturnService` in `app/services/return_service.py`.
 
