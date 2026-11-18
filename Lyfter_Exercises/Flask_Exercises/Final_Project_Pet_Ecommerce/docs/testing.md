@@ -216,13 +216,11 @@ Only the essential cases, in `tests/routes/test_invoices.py`:
 
 ### Cache
 
+Only the essential cases, in `tests/routes/test_cache.py`:
+
 | Case | Expected |
 |---|---|
-| Second read of a product | Key exists in Redis, same response |
-| Update, restock, checkout, return | The product's key is gone and lists show new data |
-| New invoice | The next list includes it |
-| Invoice key for a return or update | Gone |
+| Read an invoice twice | The key exists in Redis with a TTL, and both reads are the same |
 | Cached invoice, another client asks | 404 |
 | Two clients, same params | Each sees their own list |
-| Keys have a TTL | `ttl` is positive and within the expected range |
-| Redis down | Reads and writes still answer |
+| Return on a cached invoice | The next read shows `returned` |

@@ -58,9 +58,9 @@
 
 | ID | Requirement | Status |
 |---|---|---|
-| CACHE-01 | Decide which endpoints benefit from a cache. | Partial: ⏳ products only |
-| CACHE-02 | Every cache has invalidation conditions. | Partial: ⏳ products only |
-| CACHE-03 | Decide where a TTL is needed. | Partial: ⏳ products only |
+| CACHE-01 | Decide which endpoints benefit from a cache. | Done ✔: products and invoices, see [caching.md](caching.md) |
+| CACHE-02 | Every cache has invalidation conditions. | Done ✔ |
+| CACHE-03 | Decide where a TTL is needed. | Done ✔: 5 min for single entries, 1 min for lists |
 
 ## Tests
 

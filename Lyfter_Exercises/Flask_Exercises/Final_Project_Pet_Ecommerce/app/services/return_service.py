@@ -14,6 +14,7 @@ from app.repositories.invoice_repository import InvoiceRepository
 from app.repositories.invoice_return_repository import InvoiceReturnRepository
 from app.repositories.product_cache import ProductCache
 from app.repositories.product_repository import ProductRepository
+from app.repositories.invoice_cache import InvoiceCache
 from app.schemas.invoice_return import InvoiceReturnRequest
 from app.security.permissions import Actor, Permission
 
@@ -29,12 +30,14 @@ class ReturnService:
             return_repository: InvoiceReturnRepository,
             product_repository: ProductRepository,
             product_cache: ProductCache,
+            invoice_cache: InvoiceCache,
             ) -> None:
         self._session = session
         self._invoice_repository = invoice_repository
         self._return_repository = return_repository
         self._product_repository = product_repository
         self._product_cache = product_cache
+        self._invoice_cache = invoice_cache
 
     def create_return(self, invoice_number: int, data: InvoiceReturnRequest, actor: Actor) -> InvoiceReturn:
         """ Return some or all of an invoice's lines: restore the stock and refund the frozen prices, in one transaction. """
@@ -65,6 +68,7 @@ class ReturnService:
         self._return_repository.add(invoice_return)
         self._session.commit()  # One commit: the return, its lines, the stock and the invoice status
         self._product_cache.invalidate(*products_by_id)
+        self._invoice_cache.invalidate(invoice_number)
         logger.info("User %s returned %s lines of invoice %s (refund %s)", actor.id, len(requested), invoice_number, invoice_return.refund_amount)
         return invoice_return
 

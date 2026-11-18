@@ -10,8 +10,8 @@ Reasons are in [ADR-0003](adr/0003-redis-cache-with-explicit-invalidation.md).
 |---|---|---|---|
 | `GET /products/{id}` | `products:v1:<id>` | 5 min | Built |
 | `GET /products` | `products:v1:list:<version>:<hash>` | 1 min | Built |
-| `GET /invoices/{number}` | `invoices:v1:<number>` | 5 min | To build |
-| `GET /invoices` | `invoices:v1:list:<version>:<hash>` | 1 min | To build |
+| `GET /invoices/{number}` | `invoices:v1:<number>` | 5 min | Built |
+| `GET /invoices` | `invoices:v1:list:<version>:<hash>` | 1 min | Built |
 
 Why these:
 
@@ -62,7 +62,7 @@ Old stock in the cache can't cause overselling, because checkout always reads st
 
 ## Invoices
 
-Add `app/repositories/invoice_cache.py` with the same structure as `product_cache.py`. Two things are different, and both matter for security:
+`app/repositories/invoice_cache.py` has the same structure as `product_cache.py`, keyed by `invoice_number`. Two things are different, and both matter for security:
 
 **The ownership check runs after the cache read.** `InvoiceRead` includes `client_id`, so the service compares it on hits and misses alike. A cached invoice must not skip this check.
 
@@ -74,6 +74,12 @@ key = self._cache.list_key(params.model_copy(update={"client_id": client_id}))
 ```
 
 Without this, two clients with the same params would share a key and see each other's invoices.
+
+## Two traps
+
+**A cached schema must read back its own JSON.** The cache stores `model_dump_json()` and reads it with `model_validate_json()`. A field with `exclude=True` isn't in that JSON, so if it's required the read fails, `_decode` logs a warning and returns `None`, and every read becomes a silent miss. That's why `InvoiceRead` groups `billing` and `payment` in a `model_validator(mode="before")` from the model's flat columns, instead of reading hidden `billing_*` fields.
+
+**`delete_and_increment` with no keys.** `DEL` with no keys is a Redis error, and inside `MULTI` it cancels the `INCR` too, so the lists would never be invalidated. `Cache.delete_and_increment` skips the `DEL` when there's nothing to delete.
 
 ## When Redis fails
 

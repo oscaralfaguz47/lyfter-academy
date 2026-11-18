@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Annotated, Literal, Self
+from typing import Annotated, Literal, Self, Any
 
 from pydantic import Field, computed_field, model_validator, field_validator
 from pydantic_core import PydanticCustomError
@@ -96,29 +96,29 @@ class InvoiceRead(ReadSchema):
     total_amount: Money
     created_at: datetime
     invoice_lines: list[InvoiceLineRead]
+    billing: BillingAddressRead
+    payment: PaymentRead
 
-    # Read from the model's flat columns, hidden from the JSON: they come out grouped in billing and payment
-    billing_address: str = Field(exclude=True)
-    billing_city: str = Field(exclude=True)
-    billing_province: str = Field(exclude=True)
-    billing_postal_code: str = Field(exclude=True)
-    payment_method: InvoicePaymentMethod = Field(exclude=True)
-    payment_reference: str = Field(exclude=True)
+    @model_validator(mode="before")
+    @classmethod
+    def group_billing_and_payment(cls, data: Any) -> Any:
+        """ The model has flat columns (billing_city...) and the API groups them. """
+        if isinstance(data, (dict, cls)):
+            return data
+        grouped = {name: getattr(data, name) for name in cls.model_fields if name not in ("billing", "payment")}
+        grouped["billing"] = {
+            "address": data.billing_address,
+            "city": data.billing_city,
+            "province": data.billing_province,
+            "postal_code": data.billing_postal_code,
+        }
+        grouped["payment"] = {"method": data.payment_method, "reference": data.payment_reference}
+        return grouped
 
-    @computed_field
-    @property
-    def billing(self) -> BillingAddressRead:
-        return BillingAddressRead(
-            address=self.billing_address,
-            city=self.billing_city,
-            province=self.billing_province,
-            postal_code=self.billing_postal_code,
-        )
 
-    @computed_field
-    @property
-    def payment(self) -> PaymentRead:
-        return PaymentRead(method=self.payment_method, reference=self.payment_reference)
+class InvoicePage(ReadSchema):
+    items: list[InvoiceRead]
+    total: int
 
 
 InvoiceSort = Literal["id", "-id", "invoice_number", "-invoice_number"]

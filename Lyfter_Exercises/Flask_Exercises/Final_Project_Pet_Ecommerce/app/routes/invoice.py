@@ -8,6 +8,7 @@ from app.repositories.invoice_repository import InvoiceRepository
 from app.repositories.invoice_return_repository import InvoiceReturnRepository
 from app.repositories.product_cache import ProductCache
 from app.repositories.product_repository import ProductRepository
+from app.repositories.invoice_cache import InvoiceCache
 from app.routes.responses import created, ok, pagination_meta, serialize, serialize_many
 from app.schemas.invoice import InvoiceListParams, InvoiceRead, InvoiceUpdate
 from app.schemas.invoice_return import InvoiceReturnRead, InvoiceReturnRequest
@@ -24,13 +25,23 @@ def purchase_service() -> PurchaseService:
     """ Build the service for this request. Public because the cart's checkout route uses it too. """
     session = get_session()
     return PurchaseService(
-        session, ProductRepository(session), InvoiceRepository(session), CartRepository(session), ProductCache(get_cache())
+        session, 
+        ProductRepository(session), 
+        InvoiceRepository(session), 
+        CartRepository(session), 
+        ProductCache(get_cache()),
+        InvoiceCache(get_cache()),
     )
 
 def _return_service() -> ReturnService:
     session = get_session()
     return ReturnService(
-        session, InvoiceRepository(session), InvoiceReturnRepository(session), ProductRepository(session), ProductCache(get_cache())
+        session, 
+        InvoiceRepository(session), 
+        InvoiceReturnRepository(session), 
+        ProductRepository(session), 
+        ProductCache(get_cache()),
+        InvoiceCache(get_cache()),
     )
 
 # Invoices are created only through POST /cart/checkout
