@@ -7,6 +7,8 @@ from app.models.cart_item import CartItem
 from app.models.invoice import Invoice
 from app.models.invoice_line import InvoiceLine
 from app.models.product import Product
+from app.models.invoice_return import InvoiceReturn
+from app.models.invoice_return_line import InvoiceReturnLine
 
 # __all__ lists what the package exports. It also tell linter "this import is used on purpose"
-__all__= ["Cart", "CartItem", "Invoice", "InvoiceLine", "Product", "User", "LoginHistory"]
+__all__= ["Cart", "CartItem", "Invoice", "InvoiceLine", "InvoiceReturn", "InvoiceReturnLine", "Product", "User", "LoginHistory"]

@@ -90,7 +90,9 @@ PostgreSQL through SQLAlchemy.
 | total_amount |  numeric(10,2) | total_amount >= 0 | "ck_invoice_lines_total_amount_non_negative"
 
 ## invoice_returns
-> **Planned, not implemented yet.** There's no model or migration for this table.
+> The table and its model exist (migration `d2afd8d4c20b`). The return endpoints aren't implemented yet.
+
+Returns are immutable financial records, like invoices: there's no `updated_at` or `updated_by_id`. A new return is created instead of editing one.
 
 |Name | Type | Details | Constraint| Index
 |---|---|---|---|---|
@@ -103,7 +105,11 @@ PostgreSQL through SQLAlchemy.
 
 
 ## invoice_return_lines
-> **Planned, not implemented yet.** There's no model or migration for this table.
+> The table and its model exist (migration `d2afd8d4c20b`). The return endpoints aren't implemented yet.
+
+A line appears at most once per return. Returning more of it later is another return.
+
+The total returned of an invoice line can't exceed its sold `quantity`. A CHECK can't enforce it because it compares rows of two tables, so the return service has to validate it with the invoice lines locked (`FOR UPDATE`). `ix_invoice_return_lines_invoice_line_id` serves that sum.
 
 |Name | Type | Details | Constraint| Index
 |---|---|---|---|---|
@@ -142,14 +148,14 @@ These aren't duplicated data in the normalization sense. Each one records a fact
 | `SET NULL` | `login_history.user_id` | The audit log stays even if the user is deleted. |
 | `RESTRICT` | Every other FK | Sales, returns and audit columns are history. Deleting their user or product returns 409. |
 
-`USER_REFERENCING_CONSTRAINTS` in `user_repository.py` must list every `RESTRICT` FK to `users`. Deleting a user that one of them still references returns 409 instead of 500. Today they are `fk_products_created_by_id_users`, `fk_products_updated_by_id_users`, `fk_invoices_client_id_users`, `fk_invoices_created_by_id_users` and `fk_invoices_updated_by_id_users`. Add `fk_invoice_returns_created_by_id_users` when the `invoice_returns` table is implemented. `carts.user_id` (`CASCADE`) and `login_history.user_id` (`SET NULL`) never block a delete, so they don't belong in the list.
+`USER_REFERENCING_CONSTRAINTS` in `user_repository.py` must list every `RESTRICT` FK to `users`. Deleting a user that one of them still references returns 409 instead of 500. Today they are `fk_products_created_by_id_users`, `fk_products_updated_by_id_users`, `fk_invoices_client_id_users`, `fk_invoices_created_by_id_users`, `fk_invoices_updated_by_id_users` and `fk_invoice_returns_created_by_id_users`. `carts.user_id` (`CASCADE`) and `login_history.user_id` (`SET NULL`) never block a delete, so they don't belong in the list.
 
-**Pending:** deleting a user cascades to their carts, and `invoices.cart_id` (`RESTRICT`) blocks deleting a cart that has an invoice. The delete is still blocked by `fk_invoices_client_id_users`, but Postgres may report `fk_invoices_cart_id_carts` instead. Verify it with a test, and if it does, add `fk_invoices_cart_id_carts` to `USER_REFERENCING_CONSTRAINTS` so the client gets 409 instead of 500.
+Deleting a user cascades to their carts, and `invoices.cart_id` (`RESTRICT`) also blocks deleting a cart that has an invoice. The delete still returns 409, because the constraint Postgres reports is one of the list. `test_delete_user_with_an_invoice_returns_409_and_keeps_user` covers it: if it ever returns 500, add `fk_invoices_cart_id_carts` to the list.
 
 
 ## Entity-relationship diagram
 
-`invoice_returns` and `invoice_return_lines` are planned, not implemented yet.
+`invoice_returns` and `invoice_return_lines` exist in the database, their endpoints aren't implemented yet.
 
 ```mermaid
 erDiagram

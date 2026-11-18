@@ -51,10 +51,12 @@ tests/
     ├── conftest.py      # infrastructure: app, redis_client, clean_state, client, db_session
     ├── fixtures/        # data fixtures, one module per area
     │   ├── users.py     # registered_user, other_user, admin_user and their headers
-    │   └── products.py  # product
+    │   ├── products.py  # product, stocked_product
+    │   └── cart.py      # cart_with_item, paid_invoice
     ├── helpers/         # plain functions and constants, imported explicitly
     │   ├── users.py     # registration_body, login_body, bearer, test emails
-    │   └── products.py  # product_body
+    │   ├── products.py  # product_body
+    │   └── cart.py      # CART_URL, CHECKOUT_URL, item_url, checkout_body
     └── test_*.py
 ```
 
@@ -86,7 +88,9 @@ Fixtures:
 | `admin_user` | A registered user promoted with `flask promote-admin`, the same way the first admin is created in production. Its `user.role` still says `client`, because the data was captured before the promotion |
 | `client_headers`, `other_client_headers`, `admin_headers` | `Authorization` header for `registered_user`, `other_user` and `admin_user` |
 | `product` | A product created by `admin_user` through the API, from `product_body()`. Stock starts at 0 |
-| `paid_invoice` | Planned: an invoice created through a real purchase |
+| `stocked_product` | `product` with 10 units added through `PATCH /products/{id}/restock`. Use it for cart and checkout tests, because `PUT /cart/items` rejects a quantity over the stock |
+| `cart_with_item` | `registered_user`'s cart with 2 units of `stocked_product`, through `PUT /cart/items` |
+| `paid_invoice` | The invoice from checking out `cart_with_item` with `checkout_body()`, through `POST /cart/checkout` |
 
 Building data through the API makes tests slower but keeps them honest, since they follow what a real client does.
 
@@ -105,12 +109,12 @@ Check the result and not only the status. Error tests check `status`, `detail`, 
 
 ```python
 def test_checkout_without_stock_returns_409_and_saves_nothing(client, client_headers, cart_over_stock):
-    response = client.post(f"/api/v1/carts/{cart_over_stock['id']}/checkout", json=CHECKOUT_BODY, headers=client_headers)
+    response = client.post("/api/v1/cart/checkout", json=CHECKOUT_BODY, headers=client_headers)
 
     assert response.status_code == 409
     body = response.get_json()
     assert body["detail"] == "Not enough stock."
-    assert body["errors"]["products"][0]["product_id"] == cart_over_stock["items"][0]["product_id"]
+    assert body["errors"]["products"][0]["product_id"] == cart_over_stock["cart_items"][0]["product"]["id"]
 
     invoices = client.get("/api/v1/invoices", headers=client_headers).get_json()
     assert invoices["meta"]["total"] == 0
@@ -167,37 +171,33 @@ For the concurrency tests, start several `threading.Thread`, each calling the en
 | Delete with no sales | 204, removed from carts that had it |
 | Delete after a sale | 409 |
 
-### Carts
+### Cart
+
+Only the essential cases, in `tests/routes/test_cart.py`:
 
 | Case | Expected |
 |---|---|
-| Create | 201, `pending`, no items |
-| Add the same product twice | Quantity adds up |
-| Change quantity | Replaced |
-| Quantity 0 or negative | 422 |
-| Unknown product | 404 |
-| Remove an item | Gone from the cart |
-| `GET /carts?status=pending` | Only your pending carts |
-| Another client's cart | 404 |
-| Admin reads another's cart | 200 |
-| Admin changes another's cart | 403 |
-| Change or delete a completed cart | 409 |
+| `GET /cart` with no cart | 200, no items, total `"0.00"` |
+| First `PUT` | 200, the item with its total, and `GET /cart` shows the same |
+| `PUT` the same product again | Quantity replaced, not added |
+| Quantity over the stock | 409 with `errors.products`, and the cart stays empty |
+| Quantity 0, negative or with 4 decimals | 422 on `quantity` |
+| Remove an item twice | 200 without it, then 404 |
+| Another user | Can't see or remove your items |
 
 ### Checkout
 
+Only the essential cases, in `tests/routes/test_checkout.py`:
+
 | Case | Expected |
 |---|---|
-| Valid | 201, invoice `paid`, cart `completed`, stock reduced exactly |
-| Totals | Exact `Decimal` values |
-| Later price change | The invoice keeps the old price and name |
-| Empty cart | 422 |
-| Missing address or payment | 422 |
-| Card reference not 4 digits, or a full card number | 422 |
-| Extra field like `cvv` | 422 |
-| Not enough stock | 409 and nothing saved |
-| Same cart twice in a row | Second is 409 |
-| Five threads, same cart | One invoice |
-| Five carts, one unit of stock | One sale, four 409s, stock 0 |
+| Valid | 201, `Location` header, invoice `paid` with its line, billing and payment; stock reduced and `GET /cart` empty |
+| No cart | 409 |
+| Not enough stock (another user bought it first) | 409 with `errors.products`, no invoice, the cart keeps its item |
+| Full card number as `reference` | 422 on `payment`, and the cart keeps its item |
+| Same cart twice | Second is 409 |
+
+Concurrency tests (several threads checking out at once) aren't included. The row locks were checked by hand with two real connections.
 
 ### Invoices and returns
 

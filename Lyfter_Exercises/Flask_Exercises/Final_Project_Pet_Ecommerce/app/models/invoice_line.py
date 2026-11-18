@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from app.models.invoice import Invoice
     from app.models.product import Product
+    from app.models.invoice_return_line import InvoiceReturnLine
 
 class InvoiceLine(Base):
     __tablename__ = "invoice_lines"
@@ -32,3 +33,5 @@ class InvoiceLine(Base):
     product: Mapped["Product"] = relationship(back_populates="invoice_lines", lazy="raise")
     # Relationship with invoices
     invoice : Mapped["Invoice"] = relationship(back_populates="invoice_lines", lazy="raise")
+    # Relationships with return lines
+    invoice_return_lines: Mapped[list["InvoiceReturnLine"]] = relationship(back_populates="invoice_line", passive_deletes="all", lazy="raise")

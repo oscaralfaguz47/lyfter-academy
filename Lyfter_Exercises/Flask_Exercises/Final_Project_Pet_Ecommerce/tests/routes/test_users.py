@@ -76,3 +76,13 @@ def test_delete_user_without_sales_returns_204_and_keeps_login_history(client: F
     assert client.get(url, headers=admin_headers).status_code == HTTPStatus.NOT_FOUND
     rows = db_session.scalars(select(LoginHistory)).all()
     assert [(row.user_id, row.success) for row in rows] == [(None, True)]
+
+def test_delete_user_with_an_invoice_returns_409_and_keeps_user(
+        client: FlaskClient, registered_user: dict, admin_headers: dict, paid_invoice: dict) -> None:
+    url = f"{USERS_URL}/{registered_user["user"]["id"]}"
+
+    response = client.delete(url, headers=admin_headers)
+
+    assert response.status_code == HTTPStatus.CONFLICT
+    assert response.get_json()["detail"] == f"User {registered_user["user"]["id"]} has products or invoices that reference them."
+    assert client.get(url, headers=admin_headers).status_code == HTTPStatus.OK

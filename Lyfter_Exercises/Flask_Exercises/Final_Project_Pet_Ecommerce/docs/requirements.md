@@ -25,13 +25,13 @@
 
 | ID | Requirement | Status |
 |---|---|---|
-| CART-01 | Create carts. | Missing ⏳ |
-| CART-02 | Add, change and remove cart products. | Missing ⏳ |
-| CART-03 | Go back to carts that weren't finished. | Missing ⏳ |
-| SALE-01 | Turn a cart into a sale. | Missing: ⏳ `POST /invoices` buys without a cart |
-| SALE-02 | A sale generates an invoice. | Partial, needs the new fields ⏳ |
+| CART-01 | Create carts. | Done ✔: the first `PUT /cart/items/{product_id}` creates it ([ADR-0007](adr/0007-one-pending-cart-per-user.md)) |
+| CART-02 | Add, change and remove cart products. | Done ✔: `PUT` and `DELETE /cart/items/{product_id}` |
+| CART-03 | Go back to carts that weren't finished. | Done ✔: the pending cart stays until checkout, `GET /cart` |
+| SALE-01 | Turn a cart into a sale. | Done ✔: `POST /cart/checkout` |
+| SALE-02 | A sale generates an invoice. | Done ✔: with cart, billing, payment and snapshots |
 | SALE-03 | A sale reduces stock. | Done ✔ |
-| SALE-04 | A sale asks for billing address and payment data. | Missing ⏳ |
+| SALE-04 | A sale asks for billing address and payment data. | Done ✔: no card data is stored ([ADR-0006](adr/0006-payment-data-handling.md)) |
 | INV-01 | Get an invoice by its number. | Partial: ⏳ uses the internal id |
 | INV-02 | Returns restore stock. | Missing ⏳ |
 
@@ -50,7 +50,7 @@
 |---|---|---|
 | API-01 | Read, create, update and delete endpoints for each relevant entity. Junction tables don't need them. | Partial ⏳. Invoices have no delete on purpose, see [ADR-0005](adr/0005-invoice-snapshots-and-restricted-deletes.md) |
 | API-02 | Only admins create, update or delete products and invoices, and update or delete any user. Users are created only through registration (AUTH-01); admins are promoted with `flask promote-admin`. | Partial: ⏳ invoice update is missing. Invoices are cancelled with a return instead of a delete ([ADR-0005](adr/0005-invoice-snapshots-and-restricted-deletes.md)). Clients create invoices only through checkout, which is a sale (API-03) |
-| API-03 | Clients can use read endpoints, sales and carts. | Partial ⏳ |
+| API-03 | Clients can use read endpoints, sales and carts. | Partial ⏳: carts and checkout done, product reads still return 403 (PROD-01) |
 
 
 

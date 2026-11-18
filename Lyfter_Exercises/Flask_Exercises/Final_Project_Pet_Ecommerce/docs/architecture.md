@@ -56,7 +56,7 @@ Every error uses [RFC 9457 Problem Details](https://www.rfc-editor.org/rfc/rfc94
   "title": "Conflict",
   "status": 409,
   "detail": "Not enough stock.",
-  "instance": "/api/v1/carts/3/checkout",
+  "instance": "/api/v1/cart/checkout",
   "request_id": "b2ee4c60a884",
   "errors": { "products": [{ "product_id": 2, "requested": "2", "available": "1.000" }] }
 }
@@ -66,45 +66,46 @@ Every error uses [RFC 9457 Problem Details](https://www.rfc-editor.org/rfc/rfc94
 
 | Exception | Status | Example |
 |---|---|---|
-| `ValidationError` | 422 | Invalid fields, empty cart |
+| `ValidationError` | 422 | Invalid fields |
 | `UnauthorizedError` | 401 | Missing or expired token, wrong password |
 | `ForbiddenError` | 403 | A client calling an admin endpoint |
 | `NotFoundError` | 404 | The resource doesn't exist or isn't yours |
-| `ConflictError` | 409 | Duplicate email, not enough stock, cart already completed |
+| `ConflictError` | 409 | Duplicate email, not enough stock, checkout of an empty cart |
 
 Flask adds 400 (invalid JSON), 405, 413 and 415. `OperationalError` becomes 503.
 
 ## Cart states
 
+A user has at most one pending cart, always at `/cart`. See [ADR-0007](adr/0007-one-pending-cart-per-user.md).
+
 A cart has two states:
 
-- **pending:** the cart is open. Its owner can add, change and remove items, check it out or delete it.
-- **completed:** the cart was checked out and has an invoice. It can't change anymore.
+- **pending:** the cart is open. Its owner can add, change and remove items, or check it out.
+- **completed:** the cart was checked out and has an invoice. It can't change anymore, and the API never shows it again as "my cart".
 
 | Action | From | To | If not allowed |
 |---|---|---|---|
-| `POST /carts` | (new) | pending | |
-| Add, change or remove items | pending | pending | 409 if completed |
-| `POST /carts/{id}/checkout` | pending | completed | 409 if completed or not enough stock, 422 if empty |
-| `DELETE /carts/{id}` | pending | deleted | 409 if completed |
+| First `PUT /cart/items/{product_id}` | (none) | pending | |
+| Set or remove items | pending | pending | |
+| `POST /cart/checkout` | pending | completed | 409 if the cart is empty or there's not enough stock |
 
-A failed checkout leaves the cart as `pending`, so the user can fix it and try again.
+There's no `POST /cart`: the first item creates the cart. `GET /cart` never creates it, and shows an empty cart when there's none. After a checkout, the next `PUT` creates a new pending cart.
 
-A user can have several pending carts and return to any of them with `GET /carts?status=pending`. Adding items doesn't reserve stock. Stock is checked only at checkout.
+A failed checkout leaves the cart as `pending`, so the user can fix it and try again. The pending cart stays until it's checked out, so `GET /cart` is how a user goes back to it. Adding items doesn't reserve stock. `PUT` gives early feedback if the quantity is over the current stock, but stock is guaranteed only at checkout, with a lock.
 
 ## Checkout
 
 All of it runs in one transaction. If anything fails, the session closes without a commit and nothing is saved.
 
-1. Lock the cart with `FOR UPDATE`.
-2. Check that the user owns it, it's `pending` and it isn't empty.
+1. Lock the user's pending cart with `FOR UPDATE`. A second checkout of the same cart waits here, and once the first one commits it finds no pending cart.
+2. If there's no pending cart or it's empty, return 409.
 3. Lock its products, ordered by id.
-4. Check the stock.
-5. Insert the invoice and its lines, with name and price snapshots.
+4. Check that they exist and have enough stock.
+5. Insert the invoice, with the cart id, billing and payment data, and its lines, with name and price snapshots.
 6. Reduce the stock and mark the cart `completed`.
 7. Commit.
-8. Invalidate the products and invoices cache.
-9. Return 201 with the invoice.
+8. Invalidate the cache of those products.
+9. Return 201 with the invoice and a `Location` header.
 
 
 ## Returns

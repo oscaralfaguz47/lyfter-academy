@@ -38,19 +38,17 @@ Own = allowed only on your own data. Someone else's returns 404.
 | `GET /login-history` | Yes | No |
 | `GET /products`, `GET /products/{id}` | Yes | Yes |
 | `POST /products`, `PATCH`, `DELETE`, `PATCH .../restock` | Yes | No |
-| `POST /carts` | Yes | Yes |
-| `GET /carts`, `GET /carts/{id}` | All | Own |
-| Change a cart, its items, or check it out | Own | Own |
-| `GET /invoices`, `GET /invoices/{number}` | All | Own |
-| `PATCH /invoices/{number}` | Yes | No |
-| `POST /invoices/{number}/returns` | Yes | No |
-| `GET /invoices/{number}/returns` | All | Own |
+| `GET /cart`, `PUT` and `DELETE /cart/items/{product_id}`, `POST /cart/checkout` | Own | Own |
+| `GET /invoices`, `GET /invoices/{id}` | All | Own |
+| `PATCH /invoices/{number}` (not built yet) | Yes | No |
+| `POST /invoices/{number}/returns` (not built yet) | Yes | No |
+| `GET /invoices/{number}/returns` (not built yet) | All | Own |
 
 Clients can't list `/users` because it has other people's personal data. They read and update their own account at `/users/{id}`; someone else's id returns 404, the same as an id that doesn't exist. `/auth/me` also returns their account. Only admins delete users.
 
 New accounts are always clients. The API can't change a role: a `role` field in `PATCH /users/{id}` returns 422, even for admins. Only the server operator promotes a user, with `flask promote-admin <email>`.
 
-An admin changing someone else's cart gets 403, not 404, because admins can see every cart.
+`/cart` is always the cart of the user in the token, for admins too. There's no cart id in the URL, so nobody can reach someone else's cart. See [ADR-0007](adr/0007-one-pending-cart-per-user.md).
 
 Permissions are defined in `app/security/permissions.py`. `flask --app app permissions` prints the table.
 
@@ -110,43 +108,38 @@ Stock isn't editable through `PATCH /products/{id}`. It only changes through res
 }
 ```
 
-## Carts
+## Cart
+
+Each user has one pending cart, always at `/cart`. See [ADR-0007](adr/0007-one-pending-cart-per-user.md).
 
 | Endpoint | Body | Response | Errors |
 |---|---|---|---|
-| `POST /carts` | | 201 | |
-| `GET /carts` | `status`; `user_id` for admins | 200 list | |
-| `GET /carts/{id}` | | 200 | 404 |
-| `DELETE /carts/{id}` | | 204 | 404, 409 if completed |
-| `POST /carts/{id}/items` | `product_id`, `quantity` | 200 cart | 404, 409 if completed, 422 |
-| `PATCH /carts/{id}/items/{product_id}` | `quantity` | 200 cart | 404, 409, 422 |
-| `DELETE /carts/{id}/items/{product_id}` | | 200 cart | 404, 409 |
+| `GET /cart` | | 200 cart, empty if there's none | |
+| `PUT /cart/items/{product_id}` | `quantity` (greater than 0, up to 3 decimals) | 200 cart | 404 product not found, 409 not enough stock (details in `errors.products`), 422 |
+| `DELETE /cart/items/{product_id}` | | 200 cart | 404 the product isn't in the cart |
 
-`GET /carts?status=pending` is how a user goes back to unfinished carts. Adding a product already in the cart adds to its quantity. `PATCH` replaces it.
+There's no `POST /cart`. The first `PUT` creates the cart, and `GET /cart` never creates it. `PUT` sets the quantity, it doesn't add to it, so sending the same request twice leaves the same cart. `product_id` goes only in the URL: in the body it returns 422.
+
+Removing the last item leaves an empty pending cart, and the next `PUT` reuses it. The pending cart stays until it's checked out, so `GET /cart` is how a user goes back to an unfinished cart.
 
 ```json
 {
-  "id": 31,
-  "user_id": 7,
-  "status": "pending",
-  "items": [
-    { "product_id": 1, "product_name": "Dog food", "unit_price": "100.00", "quantity": "2.000", "line_total": "200.00" }
+  "cart_items": [
+    { "product": { "id": 1, "name": "Dog food", "price": "10.35" }, "quantity": "2.000", "total_amount": "20.70" }
   ],
-  "subtotal": "200.00",
-  "created_at": "2026-11-05T23:53:52Z",
-  "updated_at": "2026-11-05T23:53:52Z"
+  "total_amount": "20.70"
 }
 ```
 
-Cart prices are current product prices. The final price is fixed at checkout.
+Cart prices are current product prices. The final price is fixed at checkout. The stock check in `PUT` is only early feedback: stock isn't reserved, and checkout checks it again with a lock.
 
 ## Checkout
 
-`POST /carts/{id}/checkout` returns 201 with the invoice and a `Location` header.
+`POST /cart/checkout` buys every item in the user's pending cart. It returns 201 with the invoice and a `Location` header to `/invoices/{id}`. The cart becomes `completed`.
 
 ```json
 {
-  "billing_address": {
+  "billing": {
     "address": "200m north of the church",
     "city": "Zarcero",
     "province": "Alajuela",
@@ -156,7 +149,7 @@ Cart prices are current product prices. The final price is fixed at checkout.
 }
 ```
 
-Limits: `address` up to 100 characters, `city` and `province` up to 60, `postal_code` exactly 5 digits, and `reference` up to 40. `method` is `sinpe` or `card`.
+Limits: `address` 1 to 100 characters, `city` and `province` 1 to 60, `postal_code` 1 to 5, and `reference` 1 to 40. `method` is `sinpe` or `card`.
 
 The invoice is created as `paid`. The API records a payment made elsewhere and doesn't verify it; `reference` lets an admin check it later. If a payment never arrived, the admin returns every line.
 
@@ -164,20 +157,23 @@ For `"method": "card"`, `reference` must be exactly the last 4 digits. Other car
 
 | Status | When |
 |---|---|
-| 403 | An admin checking out someone else's cart |
-| 404 | The cart doesn't exist or isn't yours |
-| 409 | Already completed, or not enough stock (details in `errors.products`) |
-| 422 | Invalid body, or empty cart |
+| 401 | No valid token |
+| 409 | The cart is empty or doesn't exist, or there's not enough stock (details in `errors.products`) |
+| 422 | Invalid body |
+
+Checking out the same cart twice returns 409 the second time: the cart is already `completed`, so the user has no pending cart.
 
 ## Invoices
 
 | Endpoint | Body | Response | Errors |
 |---|---|---|---|
 | `GET /invoices` | `invoice_number`, `client_id` (admins), `sort` | 200 list | |
-| `GET /invoices/{number}` | | 200 | 404 |
-| `PATCH /invoices/{number}` | any `billing_*` field | 200 | 404, 422 |
+| `GET /invoices/{id}` | | 200 | 404 |
+| `PATCH /invoices/{number}` (not built yet) | any `billing` field | 200 | 404, 422 |
 
-There's no `POST /invoices`. Checkout is the only way to create one, so an invoice can't exist without its sale and stock change.
+`GET /invoices/{id}` uses the internal id for now. Getting it by `invoice_number` is INV-01, still pending.
+
+There's no `POST /invoices`. `POST /cart/checkout` is the only way to create one, so an invoice can't exist without its cart, sale and stock change.
 
 There's no `DELETE` either, so `DELETE /invoices/{number}` returns 405. An invoice is a financial record, so it's never deleted. To cancel a sale, return every line. See [ADR-0005](adr/0005-invoice-snapshots-and-restricted-deletes.md).
 
@@ -193,20 +189,25 @@ Only the billing fields can be edited. Amounts, lines and payment data can't. Fi
   "cart_id": 31,
   "status": "paid",
   "total_amount": "200.00",
-  "billing_address": "200m north of the church",
-  "billing_city": "Zarcero",
-  "billing_province": "Alajuela",
-  "billing_postal_code": "21101",
-  "payment_method": "sinpe",
-  "payment_reference": "20261105123456",
   "created_at": "2026-11-05T23:53:53Z",
   "invoice_lines": [
     { "id": 1, "product_id": 1, "product_name": "Dog food", "quantity": "2.000", "price": "100.00", "total_amount": "200.00" }
-  ]
+  ],
+  "billing": {
+    "address": "200m north of the church",
+    "city": "Zarcero",
+    "province": "Alajuela",
+    "postal_code": "21101"
+  },
+  "payment": { "method": "sinpe", "reference": "20261105123456" }
 }
 ```
 
+`billing` and `payment` come out grouped, with the same shape as the checkout body. In the database they're the `billing_*` and `payment_*` columns. `product_name` and `price` are the values at the time of the sale ([ADR-0005](adr/0005-invoice-snapshots-and-restricted-deletes.md)). The line `id` is what a return uses as `invoice_line_id`.
+
 ## Returns
+
+> Not built yet. The `invoice_returns` and `invoice_return_lines` tables exist, the endpoints don't.
 
 `POST /invoices/{number}/returns` is admin only and returns 201. `reason` is up to 100 characters and each `quantity` must be greater than 0.
 

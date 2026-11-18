@@ -15,7 +15,8 @@ USER_REFERENCING_CONSTRAINTS = {
     "fk_products_updated_by_id_users",
     "fk_invoices_created_by_id_users",
     "fk_invoices_updated_by_id_users",
-    "fk_invoices_client_id_users"
+    "fk_invoices_client_id_users",
+    "fk_invoice_returns_created_by_id_users",
 }
 
 class UserRepository:

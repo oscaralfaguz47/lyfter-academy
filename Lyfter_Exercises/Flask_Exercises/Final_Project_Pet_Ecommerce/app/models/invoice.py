@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from app.models.user import User
     from app.models.invoice_line import InvoiceLine
     from app.models.cart import Cart
+    from app.models.invoice_return import InvoiceReturn
 
 
 class InvoiceStatus(StrEnum):
@@ -70,3 +71,4 @@ class Invoice(AuditMixin, TimesTampMixin, Base):
 
     # Relationships in many
     invoice_lines: Mapped[list["InvoiceLine"]] = relationship(back_populates="invoice", passive_deletes="all", lazy="raise")
+    invoice_returns: Mapped[list["InvoiceReturn"]] = relationship(back_populates="invoice", passive_deletes="all", lazy="raise")

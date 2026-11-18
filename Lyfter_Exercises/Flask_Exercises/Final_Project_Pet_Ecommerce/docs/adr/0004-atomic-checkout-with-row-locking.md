@@ -1,6 +1,6 @@
 # 0004: One transaction and row locks for checkout
 
-**Status:** Accepted. Product locking is built, cart locking is pending.
+**Status:** Accepted. Built for checkout (cart and product locking). Returns are pending.
 **Date:** 2026-11-05
 
 ## Context

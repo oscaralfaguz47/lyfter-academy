@@ -1,6 +1,6 @@
 # 0006: No sensitive payment data
 
-**Status:** Accepted, not built yet.
+**Status:** Accepted. Built.
 **Date:** 2026-11-05
 
 ## Context
@@ -14,7 +14,7 @@ Store only `payment_method` and `payment_reference`.
 - `sinpe`: the transaction number, 1 to 40 characters.
 - `card`: exactly the last 4 digits. Anything else returns 422, including a full card number.
 
-`InputSchema` rejects unknown fields, so `cvv` or `expiry` return 422 without extra code. Validate the reference in a `model_validator` on `PaymentDetails`, the same way `PurchaseRequest` checks for duplicates.
+`InputSchema` rejects unknown fields, so `cvv` or `expiry` return 422 without extra code. Validate the reference in a `model_validator(mode="after")` on `PaymentInput` (`app/schemas/invoice.py`), because the rule depends on two fields: `method` and `reference`.
 
 Don't log payment data.
 
