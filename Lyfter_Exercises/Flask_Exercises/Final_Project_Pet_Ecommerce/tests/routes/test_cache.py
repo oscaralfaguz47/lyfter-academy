@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from flask.testing import FlaskClient
 from redis import Redis
+from app.cache import Cache
 
 INVOICES_URL = "/api/v1/invoices"
 
@@ -43,3 +44,8 @@ def test_return_on_a_cached_invoice_shows_it_returned(client: FlaskClient, clien
     client.post(f"{url}/returns", json=body, headers=admin_headers)
 
     assert client.get(url, headers=client_headers).get_json()["data"]["status"] == "returned"
+
+def test_invalidating_with_no_keys_still_bumps_the_list_version(redis_client: Redis) -> None:
+    Cache(redis_client).delete_and_increment([], "test:list_version")
+
+    assert redis_client.get("test:list_version") == "1"

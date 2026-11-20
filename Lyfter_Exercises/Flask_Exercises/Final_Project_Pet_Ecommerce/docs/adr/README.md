@@ -11,3 +11,4 @@ Each file records one technical decision and why it was made. If a decision chan
 | [0005](0005-invoice-snapshots-and-restricted-deletes.md) | Invoice snapshots and restricted deletes | Yes |
 | [0006](0006-payment-data-handling.md) | No sensitive payment data | Yes |
 | [0007](0007-one-pending-cart-per-user.md) | One pending cart per user | Yes |
+| [0008](0008-admins-manage-users-and-roles.md) | Admins manage users and roles, and there's always one admin | Yes |

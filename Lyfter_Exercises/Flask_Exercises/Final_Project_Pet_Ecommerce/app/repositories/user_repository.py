@@ -8,6 +8,7 @@ from app.errors.exceptions import ConflictError
 from app.models import User
 
 from app.schemas.user import UserListParams
+from app.security.permissions import UserRole
 
 SORT_COLUMNS = {"id": User.id, "name": User.name}
 USER_REFERENCING_CONSTRAINTS = {
@@ -43,6 +44,11 @@ class UserRepository:
         query = select(User).where(User.email == email).options(undefer(User.password_hash))
         return self._session.scalar(query)
 
+    def lock_admin_ids(self) -> list[int]:
+        """ Lock every admin row until commit.
+            Two requests that remove admins at once wait for each other, so both can't see "there's another admin". """
+        query = select(User.id).where(User.role == UserRole.ADMIN).order_by(User.id).with_for_update()
+        return list(self._session.scalars(query))
 
     def add(self, user: User) -> User:
         self._session.add(user)

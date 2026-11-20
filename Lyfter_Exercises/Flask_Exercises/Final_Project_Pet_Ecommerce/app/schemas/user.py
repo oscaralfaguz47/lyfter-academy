@@ -6,7 +6,7 @@ from typing import Literal, TypeAlias, Annotated
 from pydantic import BaseModel, ConfigDict, field_validator, model_validator, computed_field, Field
 
 from app.schemas.pagination import PaginationParams
-from app.schemas.input_types import PhoneNumberInput, NormalizedEmailInput
+from app.schemas.input_types import PhoneNumberInput, NormalizedEmailInput, PasswordInput
 from app.security.permissions import UserRole, Permission, ROLE_PERMISSIONS
 
 UserNameInput: TypeAlias = Annotated[str, Field(min_length=1, max_length=100)]
@@ -22,6 +22,19 @@ class UserCreate(BaseModel):
     phone_number: PhoneNumberInput
     # EmailStr validates the email format
     email: NormalizedEmailInput
+
+
+class AdminUserCreate(UserCreate):
+    """ Body of POST /users: an admin creates an account and picks its role. """
+    password: PasswordInput
+    role: UserRole = UserRole.CLIENT
+
+
+class UserRoleUpdate(BaseModel):
+    """ Body of PATCH /users/<id>/role. """
+    model_config = ConfigDict(extra="forbid")
+
+    role: UserRole
 
 
 class UserUpdate(BaseModel):

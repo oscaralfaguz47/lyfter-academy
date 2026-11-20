@@ -5,9 +5,8 @@ from typing import Annotated, TypeAlias
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
 from app.schemas.user import UserCreate
-from app.schemas.input_types import NormalizedEmailInput
+from app.schemas.input_types import NormalizedEmailInput, PasswordInput
 
-PasswordInput: TypeAlias = Annotated[str, StringConstraints(strip_whitespace=False), Field(min_length=8, max_length=128)]
 LoginPasswordInput: TypeAlias = Annotated[str, StringConstraints(strip_whitespace=False), Field(min_length=1, max_length=128)]
 
 

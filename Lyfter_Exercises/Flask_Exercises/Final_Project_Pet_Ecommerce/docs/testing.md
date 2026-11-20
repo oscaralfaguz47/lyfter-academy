@@ -153,6 +153,10 @@ Each table lists what the tests cover. The cart, checkout, invoice and cache tes
 | Client deletes their own account | 403 |
 | Delete a user with no history | 204 |
 | Delete a user with invoices | 409 |
+| Admin creates a user with a role | 201, `Location`, and the new user can log in |
+| Client creates a user | 403 |
+| Admin demotes another admin | 200 |
+| Demote or delete the last admin | 409, nothing changed |
 
 ### Products
 
@@ -220,3 +224,4 @@ In `tests/routes/test_cache.py`:
 | Cached invoice, another client asks | 404 |
 | Two clients, same params | Each sees their own list |
 | Return on a cached invoice | The next read shows `returned` |
+| Invalidate with no keys | The list version still goes up |

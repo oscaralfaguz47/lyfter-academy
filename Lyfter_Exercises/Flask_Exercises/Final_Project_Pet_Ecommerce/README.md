@@ -94,11 +94,13 @@ Run every command from the project root.
 
    `{"status": "ok", "database": "ok", "cache": "ok"}` means PostgreSQL and Redis are reachable.
 
-9. Create the first admin. Register a user with `POST /api/v1/auth/register`, then promote it. The API can't change roles, on purpose.
+9. Create the first admin. Register a user with `POST /api/v1/auth/register`, then promote it on the server:
 
    ```bash
    flask --app app promote-admin <the user's email>
    ```
+
+   From then on, admins create users and change roles through the API (`POST /api/v1/users` and `PATCH /api/v1/users/{id}/role`).
 
 ## Every day
 

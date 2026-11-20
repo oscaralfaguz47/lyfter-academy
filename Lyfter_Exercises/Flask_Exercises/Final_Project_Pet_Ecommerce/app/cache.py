@@ -33,7 +33,8 @@ class Cache:
 
     def delete_and_increment(self, keys: list[str], counter_key: str) -> None:
         pipeline = self._client.pipeline(transaction=True)
-        pipeline.delete(*keys)
+        if keys:  # DEL with no keys is a Redis error, and inside MULTI it would cancel the INCR too
+            pipeline.delete(*keys)
         pipeline.incr(counter_key)
         try:
             pipeline.execute()
@@ -60,14 +61,3 @@ def init_cache(app: Flask) -> None:
 
 def get_cache() -> Cache:
     return current_app.extensions["cache"]
-
-
-def delete_and_increment(self, keys: list[str], counter_key: str) -> None:
-    pipeline = self._client.pipeline(transaction=True)
-    if keys:  # DEL with no keys is a Redis error, and inside MULTI it would cancel the INCR too
-        pipeline.delete(*keys)
-    pipeline.incr(counter_key)
-    try:
-        pipeline.execute()
-    except RedisError:
-        logger.warning("Cache invalidation failed for %s", keys, exc_info=True)

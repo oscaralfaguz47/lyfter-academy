@@ -32,9 +32,9 @@ Own = allowed only on your own data. Someone else's returns 404.
 |---|---|---|
 | `POST /auth/register`, `/login`, `/refresh-token` | Public | Public |
 | `GET /auth/me`, `POST /auth/logout` | Yes | Yes |
-| `GET /users` | Yes | No |
+| `GET /users`, `POST /users` | Yes | No |
 | `GET /users/{id}`, `PATCH /users/{id}` | All | Own |
-| `DELETE /users/{id}` | Yes | No |
+| `PATCH /users/{id}/role`, `DELETE /users/{id}` | Yes | No |
 | `GET /login-history` | Yes | No |
 | `GET /products`, `GET /products/{id}` | Yes | Yes |
 | `POST /products`, `PATCH`, `DELETE`, `PATCH .../restock` | Yes | No |
@@ -46,7 +46,7 @@ Own = allowed only on your own data. Someone else's returns 404.
 
 Clients can't list `/users` because it has other people's personal data. They read and update their own account at `/users/{id}`; someone else's id returns 404, the same as an id that doesn't exist. `/auth/me` also returns their account. Only admins delete users.
 
-New accounts are always clients. The API can't change a role: a `role` field in `PATCH /users/{id}` returns 422, even for admins. Only the server operator promotes a user, with `flask promote-admin <email>`.
+Public sign-ups are always clients. An admin can create an account with any role through `POST /users`, and change a role through `PATCH /users/{id}/role`. A `role` field in `PATCH /users/{id}` still returns 422, even for admins: a role only changes through the endpoint made for it. The first admin is created on the server with `flask promote-admin <email>`. Demoting or deleting the last admin returns 409, so the system always keeps one. See [ADR-0008](adr/0008-admins-manage-users-and-roles.md).
 
 `/cart` is always the cart of the user in the token, for admins too. There's no cart id in the URL, so nobody can reach someone else's cart. See [ADR-0007](adr/0007-one-pending-cart-per-user.md).
 
@@ -79,9 +79,11 @@ A `role` field on register returns 422. A wrong password and an unknown email re
 | Endpoint | Body | Response | Errors |
 |---|---|---|---|
 | `GET /users` | `sort`: `id`, `-id`, `name`, `-name` | 200 list | |
+| `POST /users` | `name`, `email`, `phone_number`, `password`, optional `role` (`client` by default) | 201 and a `Location` header | 403 for clients, 409 email taken, 422 |
 | `GET /users/{id}` | | 200 | 404 |
 | `PATCH /users/{id}` | any of `name`, `email`, `phone_number` | 200 | 404, 409, 422 |
-| `DELETE /users/{id}` | | 204 | 404, 409 if the user has invoices or products |
+| `PATCH /users/{id}/role` | `role`: `admin` or `client` | 200 | 403 for clients, 404, 409 if it's the last admin, 422 |
+| `DELETE /users/{id}` | | 204 | 404, 409 if the user has invoices or products, or is the last admin |
 
 ## Login history
 

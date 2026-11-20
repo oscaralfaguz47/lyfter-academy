@@ -49,7 +49,7 @@
 | ID | Requirement | Status |
 |---|---|---|
 | API-01 | Read, create, update and delete endpoints for each relevant entity. Junction tables don't need them. | Done ✔, with two documented exceptions: invoices have no delete, they're cancelled with a return ([ADR-0005](adr/0005-invoice-snapshots-and-restricted-deletes.md)); the cart is created by its first item and emptied by removing its items ([ADR-0007](adr/0007-one-pending-cart-per-user.md)) |
-| API-02 | Only admins create, update or delete products and invoices, and update or delete any user. Users are created only through registration (AUTH-01); admins are promoted with `flask promote-admin`. | Done ✔: invoices are updated with `PATCH /invoices/{number}` (billing only) and cancelled with a return instead of a delete ([ADR-0005](adr/0005-invoice-snapshots-and-restricted-deletes.md)). Clients create invoices only through checkout, which is a sale (API-03) |
+| API-02 | Only admins create, update or delete products and invoices, and update or delete any user. Clients sign up through registration (AUTH-01). | Done ✔: admins create users with `POST /users` and change roles with `PATCH /users/{id}/role`, and the last admin can't be demoted or deleted ([ADR-0008](adr/0008-admins-manage-users-and-roles.md)). Invoices are updated with `PATCH /invoices/{number}` (billing only) and cancelled with a return instead of a delete ([ADR-0005](adr/0005-invoice-snapshots-and-restricted-deletes.md)). Clients create invoices only through checkout, which is a sale (API-03) |
 | API-03 | Clients can use read endpoints, sales and carts. | Done ✔ |
 
 

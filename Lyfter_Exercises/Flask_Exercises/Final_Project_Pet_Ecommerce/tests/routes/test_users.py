@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models import LoginHistory
-from tests.routes.helpers.users import login_body, PUBLIC_USER_FIELDS
+from tests.routes.helpers.users import login_body, PUBLIC_USER_FIELDS, OTHER_EMAIL, registration_body
 
 USERS_URL = "/api/v1/users"
 LOGIN_URL = "/api/v1/auth/login"
@@ -60,7 +60,8 @@ def test_update_user_with_role_returns_422_and_keeps_role(client: FlaskClient, r
     saved = client.get(url, headers=headers).get_json()["data"]
     assert saved["role"] == "client"
 
-def test_delete_user_who_created_a_product_returns_409_and_keeps_user(client: FlaskClient, admin_user: dict, admin_headers: dict) -> None:
+def test_delete_user_who_created_a_product_returns_409_and_keeps_user(client: FlaskClient, app, admin_user: dict, admin_headers: dict, other_user: dict) -> None:
+    app.test_cli_runner().invoke(args=["promote-admin", OTHER_EMAIL])  # So admin_user isn't the last admin: this test is about the product
     client.post("/api/v1/products", json={"name": "Watermelon", "price": "10.5"}, headers=admin_headers)
     url = f"{USERS_URL}/{admin_user["user"]["id"]}"
     response = client.delete(url, headers=admin_headers)
@@ -85,4 +86,51 @@ def test_delete_user_with_an_invoice_returns_409_and_keeps_user(
 
     assert response.status_code == HTTPStatus.CONFLICT
     assert response.get_json()["detail"] == f"User {registered_user["user"]["id"]} has products or invoices that reference them."
+    assert client.get(url, headers=admin_headers).status_code == HTTPStatus.OK
+
+
+# ---------- ADMIN MANAGES USERS AND ROLES ----------
+
+NEW_ADMIN_EMAIL = "new.admin@example.com"
+LAST_ADMIN_DETAIL = "The system must keep at least one admin."
+
+def test_admin_creates_user_with_a_role_returns_201_and_the_user_can_log_in(client: FlaskClient, admin_headers: dict) -> None:
+    body = registration_body(name="New Admin", email=NEW_ADMIN_EMAIL, role="admin")
+
+    response = client.post(USERS_URL, json=body, headers=admin_headers)
+
+    assert response.status_code == HTTPStatus.CREATED
+    user = response.get_json()["data"]
+    assert set(user) == PUBLIC_USER_FIELDS
+    assert user["role"] == "admin"
+    assert response.headers["Location"] == f"{USERS_URL}/{user['id']}"
+    assert client.post(LOGIN_URL, json=login_body(email=NEW_ADMIN_EMAIL)).status_code == HTTPStatus.OK
+
+def test_client_creating_a_user_returns_403(client: FlaskClient, client_headers: dict) -> None:
+    response = client.post(USERS_URL, json=registration_body(email=NEW_ADMIN_EMAIL, role="admin"), headers=client_headers)
+
+    assert response.status_code == HTTPStatus.FORBIDDEN
+
+def test_admin_demotes_another_admin_returns_200(client: FlaskClient, app, admin_headers: dict, other_user: dict) -> None:
+    app.test_cli_runner().invoke(args=["promote-admin", OTHER_EMAIL])
+
+    response = client.patch(f"{USERS_URL}/{other_user['user']['id']}/role", json={"role": "client"}, headers=admin_headers)
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.get_json()["data"]["role"] == "client"
+
+def test_demoting_the_last_admin_returns_409_and_keeps_the_role(client: FlaskClient, admin_user: dict, admin_headers: dict) -> None:
+    response = client.patch(f"{USERS_URL}/{admin_user['user']['id']}/role", json={"role": "client"}, headers=admin_headers)
+
+    assert response.status_code == HTTPStatus.CONFLICT
+    assert response.get_json()["detail"] == LAST_ADMIN_DETAIL
+    assert client.get("/api/v1/auth/me", headers=admin_headers).get_json()["data"]["role"] == "admin"
+
+def test_deleting_the_last_admin_returns_409_and_keeps_the_user(client: FlaskClient, admin_user: dict, admin_headers: dict) -> None:
+    url = f"{USERS_URL}/{admin_user['user']['id']}"
+
+    response = client.delete(url, headers=admin_headers)
+
+    assert response.status_code == HTTPStatus.CONFLICT
+    assert response.get_json()["detail"] == LAST_ADMIN_DETAIL
     assert client.get(url, headers=admin_headers).status_code == HTTPStatus.OK

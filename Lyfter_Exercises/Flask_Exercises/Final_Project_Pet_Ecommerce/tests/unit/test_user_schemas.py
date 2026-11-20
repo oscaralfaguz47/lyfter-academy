@@ -20,7 +20,7 @@ def test_user_update_strips_whitespace_and_lowercases_email() -> None:
 def test_user_update_with_empty_body_raises() -> None:
     with pytest.raises(ValidationError) as exc_info:
         UserUpdate.model_validate({})
-        assert _error_locations(exc_info.value) == [()]
+    assert _error_locations(exc_info.value) == [()]
 
 @pytest.mark.parametrize(
     ("body", "field"),
